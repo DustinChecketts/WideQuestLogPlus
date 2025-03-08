@@ -6,7 +6,7 @@ UIPanelWindows["QuestLogFrame"] = {
     yoffset = 12,
     bottomClampOverride = 140 + 12,
     width = 724,
-    height = 513,
+    height = 713,
     whileDead = 1
 };
 
@@ -23,7 +23,7 @@ local function WideQuestLogPlus()
 
     -- Widen the window
     QuestLogFrame:SetWidth(724)
-    QuestLogFrame:SetHeight(513)
+    QuestLogFrame:SetHeight(713)
 
     -- Adjust quest log title text position
     QuestLogTitleText:ClearAllPoints()
@@ -32,14 +32,14 @@ local function WideQuestLogPlus()
     -- Relocate the quest detail frame
     QuestLogDetailScrollFrame:ClearAllPoints()
     QuestLogDetailScrollFrame:SetPoint("TOPLEFT", QuestLogListScrollFrame, "TOPRIGHT", 41, 0)
-    QuestLogDetailScrollFrame:SetHeight(362)
+    QuestLogDetailScrollFrame:SetHeight(562)
 
     -- Relocate the "No Active Quests" text
     QuestLogNoQuestsText:ClearAllPoints()
     QuestLogNoQuestsText:SetPoint("TOP", QuestLogListScrollFrame, 0, -90)
 
     -- Expand the height of the quest list
-    QuestLogListScrollFrame:SetHeight(362)
+    QuestLogListScrollFrame:SetHeight(562)
 
     -- Create additional rows for displaying quests
     local oldQuestsDisplayed = QUESTS_DISPLAYED
@@ -134,7 +134,7 @@ local function WideQuestLogPlus()
                 newRegion:ClearAllPoints()
                 newRegion:SetPoint("TOPLEFT", QuestLogFrame, "TOPLEFT", xOfs, yOfs)
                 newRegion:SetWidth(256)
-                newRegion:SetHeight(256)
+                newRegion:SetHeight(456)
                 newRegion:SetTexture(textures[which])
 
                 -- Remove the stored texture reference

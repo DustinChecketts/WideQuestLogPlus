@@ -1,5 +1,5 @@
 # Wide Quest Log Plus
-A World of Warcraft: Classic addon that provides a dual-pane quest log with embedded quest levels and quest IDs.
+A World of Warcraft: Classic (Anniversary, Seasons, Hardcore, Era) addon that provides a dual-pane quest log with embedded quest levels and quest IDs.
 
 Wide Quest Log Plus combines the functionality of three different quest log addons and updates them for the WoW Classic (Anniversary, Seasons, Hardcore, Era) servers. Ideal for players who want to retain the look of a native user interface with a few modern advancements. The quest level aids hardcore players in understanding the intended difficulty of a particular quest (although some quests are still considered dangerous far their intended level). The quest ID allows players to easily identify the quest in any third-party websites, tools, and mods.
 

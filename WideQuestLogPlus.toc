@@ -1,9 +1,18 @@
-## Interface: 11508, 20505
 ## Title: WideQuestLogPlus
-## Version: 1.0.14
-## Author: StormtrooperTK421
 ## Notes: Dual-pane quest log with quest level and ID
-## DefaultState: enabled
-## X-Curse-Project-ID: 900131
+## Author: StormtrooperTK421
 
+## IconTexture: 133740
+## Category-enUS: Quests & Leveling
+
+## Version: @project-version@
+## Interface: 11508, 20505
+## X-Curse-Project-ID: 900131
+## X-License: MIT
+
+# WideQeustLogPlus
 WideQuestLogPlus.lua
+
+# Feedback Welcome! (=
+# CurseForge // https://www.curseforge.com/wow/addons/wide-quest-log-plus
+# GitHub // https://github.com/DustinChecketts/WideQuestLogPlus

@@ -1,0 +1,9 @@
+# .pkgmeta
+package-as: WideQuestLogPlus
+enable-nolib-creation: no
+
+ignore:
+    - .github
+    - .pkgmeta
+    - LICENSE
+    - README.md

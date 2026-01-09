@@ -24,8 +24,6 @@ Wide Quest Log Plus combines the functionality of three different quest log addo
 
 <h4>Known Issues / To-Do</h4>
 
-- Enable tracking of greater than 5 quests simultaneously - I've submitted feedback to Blizzard to have this increased in the PTR, but don't know if they have plans to increase the number of simultaneously tracked quests beyond 5. I hope to find a way.
-- Test with ElvUI, Masque, and various other popular UI frameworks
 - Create options commands and/or window to enable/disable the 3 features
 
 Updated, uploaded, and maintained (at least for now) by [StormtrooperTK421](https://discordapp.com/users/237746068844969994) on [GitHub](https://github.com/DustinChecketts/WideQuestLogPlus). Please submit issues and I'll do my best to troubleshoot, replicate, and resolve issues as my limited abilities allow.

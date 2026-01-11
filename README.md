@@ -1,7 +1,7 @@
 # Wide Quest Log Plus
 A World of Warcraft: Classic (Anniversary, Seasons, Hardcore, Era) addon that provides a dual-pane quest log with embedded quest levels and quest IDs.
 
-Wide Quest Log Plus combines the functionality of three different quest log addons and updates them for the WoW Classic (Anniversary, Seasons, Hardcore, Era) servers. Ideal for players who want to retain the look of a native user interface with a few modern advancements. The quest level aids hardcore players in understanding the intended difficulty of a particular quest (although some quests are still considered dangerous far their intended level). The quest ID allows players to easily identify the quest in any third-party websites, tools, and mods.
+Wide Quest Log Plus combines the functionality of three different quest log addons and updates them for the WoW Classic (Anniversary, Seasons, Hardcore, Era) servers. Ideal for players who want to retain the look of a native user interface with a few modern advancements. The quest level aids hardcore players in understanding the intended difficulty of a particular quest (although some quests are still considered dangerous for their intended level). The quest ID allows players to easily identify the quest in any third-party websites, tools, and mods.
 
 <h4>Features</h4>
 
@@ -24,8 +24,6 @@ Wide Quest Log Plus combines the functionality of three different quest log addo
 
 <h4>Known Issues / To-Do</h4>
 
-- Enable tracking of greater than 5 quests simultaneously - I've submitted feedback to Blizzard to have this increased in the PTR, but don't know if they have plans to increase the number of simultaneously tracked quests beyond 5. I hope to find a way.
-- Test with ElvUI, Masque, and various other popular UI frameworks
 - Create options commands and/or window to enable/disable the 3 features
 
 Updated, uploaded, and maintained (at least for now) by [StormtrooperTK421](https://discordapp.com/users/237746068844969994) on [GitHub](https://github.com/DustinChecketts/WideQuestLogPlus). Please submit issues and I'll do my best to troubleshoot, replicate, and resolve issues as my limited abilities allow.

@@ -1,20 +1,22 @@
+## Interface: 20506, 11509, 16001
 ## Title: WideQuestLogPlus
-## Notes: Dual-pane quest log with quest level and ID
-
-## Author: StormtrooperTK421
-
-## IconTexture: 133740
-## Category-enUS: Quests & Leveling
-
 ## Version: @project-version@
-## Interface: 20506, 11509
+## Author: StormtrooperTK421
+## Notes: A wider Blizzard-style quest log with quest level and ID
+## IconTexture: 133740
+## Category-enUS: Quests
 ## X-Curse-Project-ID: 900131
 ## X-License: MIT
-
 ## SavedVariables: WideQuestLogPlusDB
+## OptionalDeps: Questie, ElvUI, AI_VoiceOver
 
-# WideQeustLogPlus
-WideQuestLogPlus.lua
+# Shared architecture
+Layout.lua
+Common.lua
+
+# Client implementations (each self-disables when not applicable)
+Classic.lua
+Forever.lua
 
 # Feedback Welcome!
 # CurseForge // https://www.curseforge.com/wow/addons/wide-quest-log-plus

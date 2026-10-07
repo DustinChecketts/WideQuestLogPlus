@@ -11,6 +11,7 @@
 ## OptionalDeps: Questie, ElvUI, AI_VoiceOver
 
 # Shared architecture
+Compat.lua
 Layout.lua
 Common.lua
 

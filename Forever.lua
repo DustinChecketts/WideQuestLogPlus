@@ -5,7 +5,13 @@ local ADDON_NAME, ns = ...
 -- this file builds the two-pane quest log as a window of its own, in the shared layout (Layout.lua),
 -- and routes the quest log key, the micro menu button and the objective tracker to it.
 -- Clients that still have the classic quest log are handled by Classic.lua
-if (QuestLogFrame or not (C_QuestLog and C_QuestLog.GetInfo and QuestInfo_Display and QUEST_TEMPLATE_LOG)) then
+if not (ns.Compat and ns.Compat.isForever) then
+	return
+end
+
+-- Keep API capability checks close to the implementation. Compat decides which client this is;
+-- Forever.lua decides whether that client exposes the APIs this recreation requires.
+if not (C_QuestLog and C_QuestLog.GetInfo and QuestInfo_Display and QUEST_TEMPLATE_LOG) then
 	return
 end
 

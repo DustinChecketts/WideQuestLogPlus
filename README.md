@@ -12,6 +12,7 @@ Wide Quest Log Plus combines the functionality of three different quest log addo
 - Quest IDs at the bottom of the quest details
 - Objectives with a check when done and their progress (`8 / 8`) lined up on the right; gold and experience aligned the same way
 - A gap above each zone in the list, and the tracking check in front of each tracked quest
+- Zones listed by the average level of your quests in them on WoW Forever, highest first, so the zones you're levelling in now are at the top, and each zone's quests highest level first
 - Resizable height by dragging the grip in the bottom-right corner, remembered between sessions (`/wqlp reset` restores the default)
 - Shift+click a quest to link it in chat (with a chat box open) or to track and untrack it
 - Works with Questie's tracker (on WoW Forever, tracking follows what Questie's tracker can show), ElvUI's skin and VoiceOver

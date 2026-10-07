@@ -660,38 +660,57 @@ end
 -- Refreshing
 ---------------------------------------------------------------------------------------------------
 
--- Same visibility rules as the map's quest list: no hidden quests, world quests or bonus objectives,
--- and zones only when something under them would show, each after a blank spacer but the first.
--- Returns the list entries, every quest that would show with its zone open, and whether every zone
--- is collapsed
-local function BuildEntries()
-	local entries, quests = {}, {}
-	local header
-	local anyHeader, anyExpanded = false, false
+-- Zones with the same average quest level sort alphabetically, ignoring a leading "The" (The Barrens
+-- goes under B)
+local function ZoneSortKey(header)
+	return (strlower(header.title or ""):gsub("^the%s+", ""))
+end
 
-	local function AddHeader()
-		if (not (header and #header.quests > 0)) then
-			return
+-- Zone order, by name, worked out when the window opens and held while it stays open, so dropping or
+-- finishing a quest doesn't shuffle the zones on screen. Zones that turn up while it's open go after
+-- the rest
+local zoneOrder
+
+local function QuestLevel(quest)
+	return quest.difficultyLevel or quest.level or 0
+end
+
+-- Quests sort highest level first; quests of the same level keep the quest log's order
+local function SortQuests(quests)
+	table.sort(quests, function(a, b)
+		local levelA, levelB = QuestLevel(a), QuestLevel(b)
+		if (levelA ~= levelB) then
+			return levelA > levelB
 		end
-		if (#entries > 0) then
-			entries[#entries + 1] = {isSpacer = true}
-		end
-		entries[#entries + 1] = header
-		anyHeader = true
-		if (not header.isCollapsed) then
-			anyExpanded = true
-			for _, quest in ipairs(header.quests) do
-				entries[#entries + 1] = quest
-			end
-		end
+		return a.questLogIndex < b.questLogIndex
+	end)
+end
+
+-- The average level of the quests showing under a zone
+local function AverageLevel(quests)
+	local total = 0
+	for _, quest in ipairs(quests) do
+		total = total + QuestLevel(quest)
 	end
+	return total / math.max(#quests, 1)
+end
+
+-- Same visibility rules as the map's quest list: no hidden quests, world quests or bonus objectives,
+-- and zones only when something under them would show. Quests outside any zone come first, then the
+-- zones from the highest average quest level to the lowest, so the zones you're levelling in now sit
+-- at the top, each after a blank spacer but the first. Within each, quests go highest level first. Returns the list entries,
+-- every quest that would show with its zone open, and whether every zone is collapsed
+local function BuildEntries()
+	local entries, quests, zones = {}, {}, {}
+	local header
 
 	for index = 1, C_QuestLog.GetNumQuestLogEntries() do
 		local info = C_QuestLog.GetInfo(index)
 		if (info and info.isHeader) then
-			AddHeader()
 			header = info
 			header.quests = {}
+			header.sortKey = ZoneSortKey(header)
+			zones[#zones + 1] = header
 		elseif (info and not info.isHidden and not info.isTask and (not info.isBounty or C_QuestLog.IsComplete(info.questID))) then
 			quests[#quests + 1] = info
 			if (header) then
@@ -701,7 +720,49 @@ local function BuildEntries()
 			end
 		end
 	end
-	AddHeader()
+
+	SortQuests(entries) -- Quests outside any zone
+	for _, zone in ipairs(zones) do
+		zone.averageLevel = AverageLevel(zone.quests)
+		SortQuests(zone.quests)
+	end
+	table.sort(zones, function(a, b)
+		local rankA, rankB = zoneOrder and zoneOrder[a.title or ""], zoneOrder and zoneOrder[b.title or ""]
+		if (rankA and rankB) then
+			return rankA < rankB
+		elseif (rankA or rankB) then
+			return rankA ~= nil
+		elseif (a.averageLevel ~= b.averageLevel) then
+			return a.averageLevel > b.averageLevel
+		elseif (a.sortKey ~= b.sortKey) then
+			return a.sortKey < b.sortKey
+		end
+		return a.questLogIndex < b.questLogIndex
+	end)
+
+	if (not zoneOrder) then
+		zoneOrder = {}
+		for rank, zone in ipairs(zones) do
+			zoneOrder[zone.title or ""] = rank
+		end
+	end
+
+	local anyHeader, anyExpanded = false, false
+	for _, zone in ipairs(zones) do
+		if (#zone.quests > 0) then
+			if (#entries > 0) then
+				entries[#entries + 1] = {isSpacer = true}
+			end
+			entries[#entries + 1] = zone
+			anyHeader = true
+			if (not zone.isCollapsed) then
+				anyExpanded = true
+				for _, quest in ipairs(zone.quests) do
+					entries[#entries + 1] = quest
+				end
+			end
+		end
+	end
 
 	return entries, quests, anyHeader and not anyExpanded
 end
@@ -860,6 +921,7 @@ end)
 
 frame:SetScript("OnHide", function()
 	scrollToQuestID = nil
+	zoneOrder = nil -- Sorted afresh next time the window opens
 	PlaySound(SOUNDKIT.IG_QUEST_LOG_CLOSE)
 	StaticPopup_Hide("ABANDON_QUEST")
 	StaticPopup_Hide("ABANDON_QUEST_WITH_ITEMS")

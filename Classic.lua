@@ -1,7 +1,7 @@
-local ADDON_NAME = ...
+local ADDON_NAME, ns = ...
 
 -- Era / Anniversary TBC only: preserve Blizzard's native Classic quest log.
-if not QuestLogFrame then
+if not (ns and ns.Compat and ns.Compat.isSupportedClassic) then
 	return
 end
 

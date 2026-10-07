@@ -7,17 +7,16 @@
 ## Category-enUS: Quests & Leveling
 
 ## Version: @project-version@
-## Interface: 11509, 20506, 16001
+## Interface: 16001
 ## X-Curse-Project-ID: 900131
 ## X-License: MIT
 
 ## SavedVariables: WideQuestLogPlusDB
 ## OptionalDeps: Questie, ElvUI, AI_VoiceOver
 
-# Fallback for clients without a TOC of their own; each file only runs on the clients it's for
+# WoW Forever: the quest log as a window of its own
 Layout.lua
 Common.lua
-Legacy.lua
 Modern.lua
 
 # Feedback Welcome!

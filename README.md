@@ -1,19 +1,21 @@
 # Wide Quest Log Plus
-A World of Warcraft: Classic (Anniversary, Seasons, Hardcore, Era) addon that provides a dual-pane quest log with embedded quest levels and quest IDs.
+A World of Warcraft: Classic (Anniversary, Seasons, Hardcore, Era, WoW Forever) addon that provides a dual-pane quest log with embedded quest levels and quest IDs.
 
-Wide Quest Log Plus combines the functionality of three different quest log addons and updates them for the WoW Classic (Anniversary, Seasons, Hardcore, Era) servers. Ideal for players who want to retain the look of a native user interface with a few modern advancements. The quest level aids hardcore players in understanding the intended difficulty of a particular quest (although some quests are still considered dangerous for their intended level). The quest ID allows players to easily identify the quest in any third-party websites, tools, and mods.
+Wide Quest Log Plus combines the functionality of three different quest log addons and updates them for the WoW Classic (Anniversary, Seasons, Hardcore, Era, WoW Forever) servers. Ideal for players who want to retain the look of a native user interface with a few modern advancements. The quest level aids hardcore players in understanding the intended difficulty of a particular quest (although some quests are still considered dangerous for their intended level). The quest ID allows players to easily identify the quest in any third-party websites, tools, and mods.
 
 <h4>Features</h4>
 
-- A dual-pane quest log that doubles the width of the original quest log
-- Resizable height by dragging the grip in the bottom-right corner (`/wqlp reset` restores default)
-- Full quest list in the left-pane with quest details relocated to the right pane
-- Custom textures added to maintain the look and feel of the original interface
-- Quest levels added to the quest titles in the quest list (left-pane)
-- Quest ids added to the quest title in the quest details (right-pane)
-- Ability to shift+click link quests in chat
-- Ability to shift+click quests to enable quest tracking
-- Added Compatability with VoiceOver addon in version 1.0.12+
+- A dual-pane quest log: the full quest list on the left, quest details on the right
+- The same layout on Classic Era, Anniversary and WoW Forever, with custom textures that keep the look and feel of the original interface
+- Quest details as wide as two columns of reward items, with even margins all round
+- Quest levels in the list, with the quest's type after the level: D dungeon, R raid, P PvP, G group, E elite (for example `[14D]`)
+- Quest IDs at the bottom of the quest details
+- Objectives with a check when done and their progress (`8 / 8`) lined up on the right; gold and experience aligned the same way
+- A gap above each zone in the list, and the tracking check in front of each tracked quest
+- Resizable height by dragging the grip in the bottom-right corner, remembered between sessions (`/wqlp reset` restores the default)
+- Shift+click a quest to link it in chat (with a chat box open) or to track and untrack it
+- Works with Questie's tracker (on WoW Forever, tracking follows what Questie's tracker can show), ElvUI's skin and VoiceOver
+- WoW Forever (1.60+): that client replaced the classic quest log with a list docked in the world map, so the quest log is a window of its own there. The quest log key (L), the micro menu button and clicks on the objective tracker open it; the world map (M) keeps Blizzard's list. Drag the title bar to move it, `/wqlp` toggles it, and `/wqlp map` switches the L key back to Blizzard's map log
 
 <h4>Acknowledgements</h4>
 

@@ -9,12 +9,14 @@ ns.Layout = L
 
 -- Quest details are as wide as two columns of reward buttons (147px each, 1px apart), which can't
 -- shrink, with TEXT_MARGIN of parchment on the left, right and top
-L.REWARD_COLUMNS_WIDTH = 276 -- Minimum width needed for the reward buttons
-L.TEXT_MARGIN = 17
+L.REWARD_COLUMNS_WIDTH = 147 + 1 + 147 -- Two Blizzard reward-button columns
+L.TEXT_MARGIN = 16
 
 -- The classic art's parchment spans x 348-658; the window is widened by however much more it needs
 local ART_PARCHMENT_LEFT, ART_PARCHMENT_RIGHT = 348, 658
-L.EXTRA_WIDTH = 0 -- Canonical WQLP width; Forever must match Era/TBC, not widen it further
+-- Gogo's working Forever implementation derives the minimum extra width from the actual
+-- reward-button footprint. Without this strip the right-hand pane is narrower than its contents.
+L.EXTRA_WIDTH = math.max(0, L.REWARD_COLUMNS_WIDTH + 2 * L.TEXT_MARGIN - (ART_PARCHMENT_RIGHT - ART_PARCHMENT_LEFT))
 
 L.BASE_WIDTH = 724 + L.EXTRA_WIDTH
 L.BASE_HEIGHT = 513
@@ -100,8 +102,8 @@ local STRIP_SOURCE = 8 -- Pixels of the middle piece the widening strip is cut f
 
 -- Draws the window art on a frame and returns a function that lays it out for a given window height.
 -- Three columns of pieces, plus a strip widening the parchment where the middle and right pieces meet.
--- The right texture contains pixels beyond the drawn border (at x=515+176); crop those
--- pixels instead of letting parchment art protrude past the window border.
+-- The right-hand texture retains its full UVs; the 17-unit center strip provides
+-- the space required for the two-column rewards and matching text.
 -- The strip is cut from the last few pixels of the middle piece and stretched, so both of its seams
 -- continue the art on either side. The top half of each upper piece carries the window's top border
 -- and keeps its proportions; only the plain lower half is stretched when the window is dragged taller
@@ -111,7 +113,7 @@ function ns.CreateWindowArt(frame, sublevel)
 		{"Left", 3, 0, 256},
 		{"Mid", 259, 0, 256},
 		{"Mid", 515, 1 - STRIP_SOURCE / 256, L.EXTRA_WIDTH},
-		{"Right", 515 + L.EXTRA_WIDTH, 0, 176}
+		{"Right", 515 + L.EXTRA_WIDTH, 0, 256}
 	}) do
 		local name, x, left, width = unpack(column)
 		for _, row in ipairs({"Top", "Bot"}) do
@@ -121,7 +123,7 @@ function ns.CreateWindowArt(frame, sublevel)
 				region:SetTexture(IMG .. row .. name)
 				region:SetWidth(width)
 				if (count == 1) then
-					region:SetTexCoord(left, (name == "Right") and (176 / 256) or 1, 0, 1)
+					region:SetTexCoord(left, 1, 0, 1)
 				elseif (piece == 1) then
 					region:SetTexCoord(left, (name == "Right") and (176 / 256) or 1, 0, TOP_SPLIT)
 				else

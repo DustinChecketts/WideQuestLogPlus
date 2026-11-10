@@ -100,6 +100,8 @@ local STRIP_SOURCE = 8 -- Pixels of the middle piece the widening strip is cut f
 
 -- Draws the window art on a frame and returns a function that lays it out for a given window height.
 -- Three columns of pieces, plus a strip widening the parchment where the middle and right pieces meet.
+-- The right texture contains pixels beyond the drawn border (at x=515+176); crop those
+-- pixels instead of letting parchment art protrude past the window border.
 -- The strip is cut from the last few pixels of the middle piece and stretched, so both of its seams
 -- continue the art on either side. The top half of each upper piece carries the window's top border
 -- and keeps its proportions; only the plain lower half is stretched when the window is dragged taller
@@ -109,7 +111,7 @@ function ns.CreateWindowArt(frame, sublevel)
 		{"Left", 3, 0, 256},
 		{"Mid", 259, 0, 256},
 		{"Mid", 515, 1 - STRIP_SOURCE / 256, L.EXTRA_WIDTH},
-		{"Right", 515 + L.EXTRA_WIDTH, 0, 256}
+		{"Right", 515 + L.EXTRA_WIDTH, 0, 176}
 	}) do
 		local name, x, left, width = unpack(column)
 		for _, row in ipairs({"Top", "Bot"}) do
@@ -119,11 +121,11 @@ function ns.CreateWindowArt(frame, sublevel)
 				region:SetTexture(IMG .. row .. name)
 				region:SetWidth(width)
 				if (count == 1) then
-					region:SetTexCoord(left, 1, 0, 1)
+					region:SetTexCoord(left, (name == "Right") and (176 / 256) or 1, 0, 1)
 				elseif (piece == 1) then
-					region:SetTexCoord(left, 1, 0, TOP_SPLIT)
+					region:SetTexCoord(left, (name == "Right") and (176 / 256) or 1, 0, TOP_SPLIT)
 				else
-					region:SetTexCoord(left, 1, TOP_SPLIT, 1)
+					region:SetTexCoord(left, (name == "Right") and (176 / 256) or 1, TOP_SPLIT, 1)
 				end
 				pieces[#pieces + 1] = {region = region, x = x, row = row, piece = piece}
 			end

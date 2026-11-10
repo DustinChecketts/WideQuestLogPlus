@@ -121,7 +121,9 @@ function ns.CreateWindowArt(frame, sublevel)
 			for piece = 1, count do
 				local region = frame:CreateTexture(nil, "ARTWORK", nil, sublevel)
 				region:SetTexture(IMG .. row .. name)
-				region:SetWidth(width)
+				-- The upper-right texture has artwork beyond the visible border. Crop its
+				-- geometry AND UVs together; cropping UVs alone stretches 176px across 256px.
+				region:SetWidth((row == "Top" and name == "Right") and 176 or width)
 				if (count == 1) then
 					region:SetTexCoord(left, 1, 0, 1)
 				elseif (piece == 1) then

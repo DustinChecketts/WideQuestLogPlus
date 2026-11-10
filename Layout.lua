@@ -9,7 +9,7 @@ ns.Layout = L
 
 -- Quest details are as wide as two columns of reward buttons (147px each, 1px apart), which can't
 -- shrink, with TEXT_MARGIN of parchment on the left, right and top
-L.REWARD_COLUMNS_WIDTH = 276 -- Match the existing WQLP parchment content width
+L.REWARD_COLUMNS_WIDTH = 276 -- Minimum width needed for the reward buttons
 L.TEXT_MARGIN = 17
 
 -- The classic art's parchment spans x 348-658; the window is widened by however much more it needs
@@ -28,13 +28,16 @@ L.LIST_WIDTH = 300
 L.DETAIL_LEFT = L.LIST_LEFT + L.LIST_WIDTH + 41
 
 L.PARCHMENT_LEFT = ART_PARCHMENT_LEFT
-L.PARCHMENT_RIGHT = ART_PARCHMENT_RIGHT + L.EXTRA_WIDTH
+-- The original prototype stopped the detail viewport well before the visible right-side art.
+-- Use the available space on Forever; Classic.lua continues using Blizzard's own geometry.
+L.FOREVER_DETAIL_EXTENSION = 55
+L.PARCHMENT_RIGHT = ART_PARCHMENT_RIGHT + L.EXTRA_WIDTH + L.FOREVER_DETAIL_EXTENSION
 L.PARCHMENT_TOP = 74
 
 -- Where the quest text goes: TEXT_MARGIN inside the parchment, and level with the first quest row of
 -- the list (one row below the top, under the first zone header)
 L.CONTENT_LEFT = L.PARCHMENT_LEFT + L.TEXT_MARGIN
-L.CONTENT_WIDTH = L.REWARD_COLUMNS_WIDTH
+L.CONTENT_WIDTH = L.PARCHMENT_RIGHT - L.CONTENT_LEFT - L.TEXT_MARGIN
 L.CONTENT_TOP = L.PANE_TOP + L.ROW_HEIGHT
 
 -- A blank line under the quest's title and under the Description and Rewards headings: Blizzard's 5px
@@ -80,7 +83,7 @@ L.BUTTON_WIDTH = 123
 L.BUTTON_HEIGHT = 21
 
 -- Centre of the scroll bar slot to the right of the parchment
-L.DETAIL_SCROLL_SLOT_X = 673 + L.EXTRA_WIDTH
+L.DETAIL_SCROLL_SLOT_X = 673 + L.EXTRA_WIDTH + L.FOREVER_DETAIL_EXTENSION
 
 -- The drawn border stops short of the frame's own edges: the opaque part of img/WQLP_BotRight stops
 -- 176px into the piece and 211px down it. The resize grip sits GRIP_INSET inside that corner

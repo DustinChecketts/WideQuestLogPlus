@@ -30,14 +30,14 @@ L.DETAIL_LEFT = L.LIST_LEFT + L.LIST_WIDTH + 41
 L.PARCHMENT_LEFT = ART_PARCHMENT_LEFT
 -- The original prototype stopped the detail viewport well before the visible right-side art.
 -- Use the available space on Forever; Classic.lua continues using Blizzard's own geometry.
-L.FOREVER_DETAIL_EXTENSION = 55
+L.FOREVER_DETAIL_EXTENSION = 0
 L.PARCHMENT_RIGHT = ART_PARCHMENT_RIGHT + L.EXTRA_WIDTH + L.FOREVER_DETAIL_EXTENSION
 L.PARCHMENT_TOP = 74
 
 -- Where the quest text goes: TEXT_MARGIN inside the parchment, and level with the first quest row of
 -- the list (one row below the top, under the first zone header)
 L.CONTENT_LEFT = L.PARCHMENT_LEFT + L.TEXT_MARGIN
-L.CONTENT_WIDTH = L.PARCHMENT_RIGHT - L.CONTENT_LEFT - L.TEXT_MARGIN
+L.CONTENT_WIDTH = L.REWARD_COLUMNS_WIDTH
 L.CONTENT_TOP = L.PANE_TOP + L.ROW_HEIGHT
 
 -- A blank line under the quest's title and under the Description and Rewards headings: Blizzard's 5px

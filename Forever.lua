@@ -233,7 +233,15 @@ local function ColorRow(row, highlighted)
 	if (data.isHeader) then
 		color, highlight = QuestDifficultyColors.header, QuestDifficultyHighlightColors.header
 	else
-		color, highlight = GetQuestDifficultyColor(data.difficultyLevel or data.level)
+		-- Forever's native quest log uses the server-rated quest difficulty when available.
+		-- This differs from GetQuestDifficultyColor(level, isScaling) on scaling quests.
+		local difficulty = C_PlayerInfo and C_PlayerInfo.GetContentDifficultyQuestForPlayer
+			and C_PlayerInfo.GetContentDifficultyQuestForPlayer(data.questID)
+		if difficulty and GetDifficultyColor then
+			color, highlight = GetDifficultyColor(difficulty)
+		else
+			color, highlight = GetQuestDifficultyColor(data.difficultyLevel or data.level, data.isScaling, data.questID)
+		end
 	end
 	local text = (highlighted or (data.questID and data.questID == selectedQuestID)) and highlight or color
 	row.Text:SetTextColor(text.r, text.g, text.b)

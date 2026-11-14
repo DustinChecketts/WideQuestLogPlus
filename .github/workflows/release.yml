@@ -1,17 +1,56 @@
 name: Package and release
 
-# Releases are intentionally tag-only. Creating or updating the prototype branch
-# cannot publish an addon. Maintainer approval is required before tagging.
+# Publishing is only initiated by a version tag or an explicit manual action.
 on:
   push:
     tags:
       - "v*"
 
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (example: 1.1.0)"
+        required: true
+        type: string
+
 permissions:
   contents: write
 
 jobs:
+  # Manual releases create the tag only. The tag-triggered run publishes once,
+  # preventing the manual and push events from both uploading the same version.
+  create-tag:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out release source
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+
+      - name: Create release tag
+        env:
+          VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION#v}"
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid version: $VERSION (expected 1.2.3)"
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "$TAG"
+          git push origin "$TAG"
+
   release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     env:
       CF_API_TOKEN: ${{ secrets.CF_API_KEY }}
@@ -22,6 +61,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Package and publish to CurseForge
-        # Same pinned packager used by PetXPBarPlus; supports 16xxx Forever clients.
+      - name: Package and publish
+        # Same pinned BigWigs packager as PetXPBarPlus and VendorPricePlus.
         uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0

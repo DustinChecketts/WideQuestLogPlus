@@ -13,6 +13,6 @@ permissions:
 
 jobs:
   validate:
-    uses: DustinChecketts/StormCore/.github/workflows/validate-addon.yml@80696280b69b2c4d71c56b40f0950dc60fb4d27b
+    uses: DustinChecketts/StormCore/.github/workflows/validate-addon.yml@702b1ffae074c30f9a36aba85f1aa708a2dcbe34
     with:
       strict: false

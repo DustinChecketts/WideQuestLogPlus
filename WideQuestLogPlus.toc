@@ -4,21 +4,13 @@
 ## Author: StormtrooperTK421
 ## Notes: A wider Blizzard-style quest log with quest level and ID
 ## IconTexture: 133740
-## Category-enUS: Quests
 ## X-Curse-Project-ID: 900131
-## X-License: MIT
 ## SavedVariables: WideQuestLogPlusDB
 ## OptionalDeps: Questie, ElvUI, AI_VoiceOver
 
-# Shared architecture
 Compat.lua
 Layout.lua
 Common.lua
 
-# Client implementations (each self-disables when not applicable)
 Classic.lua
 Forever.lua
-
-# Feedback Welcome!
-# CurseForge // https://www.curseforge.com/wow/addons/wide-quest-log-plus
-# GitHub // https://github.com/DustinChecketts/WideQuestLogPlus

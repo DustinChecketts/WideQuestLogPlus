@@ -1,4 +1,9 @@
-local ADDON_NAME = ...
+local ADDON_NAME, ns = ...
+
+-- Era / Anniversary TBC only: preserve Blizzard's native Classic quest log.
+if not (ns and ns.Compat and ns.Compat.isSupportedClassic) then
+	return
+end
 
 -- Geometry of the quest log at its default (unresized) size
 local BASE_WIDTH = 724

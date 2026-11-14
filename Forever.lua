@@ -233,7 +233,7 @@ local function ColorRow(row, highlighted)
 	if (data.isHeader) then
 		color, highlight = QuestDifficultyColors.header, QuestDifficultyHighlightColors.header
 	else
-		color, highlight = GetQuestDifficultyColor(data.difficultyLevel or data.level, data.isScaling, data.questID)
+		color, highlight = GetQuestDifficultyColor(data.difficultyLevel or data.level)
 	end
 	local text = (highlighted or (data.questID and data.questID == selectedQuestID)) and highlight or color
 	row.Text:SetTextColor(text.r, text.g, text.b)

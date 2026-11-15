@@ -12,6 +12,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local x = L.CONTENT_LEFT - L.PARCHMENT_LEFT
 	local yStart = L.CONTENT_TOP - L.PANE_TOP
 	local regions = {}
+	local rewardSnapshot
 	local function Text(font, value)
 		local t = child:CreateFontString(nil, "ARTWORK", font)
 		t:SetJustifyH("LEFT")
@@ -171,11 +172,14 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			description:SetText(descriptionValue)
 			Place(description, 5)
 		end
-		if not C_QuestLog.ShouldShowQuestRewards or C_QuestLog.ShouldShowQuestRewards(questID) then
+		local allowed = not C_QuestLog.ShouldShowQuestRewards or C_QuestLog.ShouldShowQuestRewards(questID)
+		rewardSnapshot = { questID = questID, allowed = allowed }
+		if allowed then
 			local choices = GetNumQuestLogChoices(questID, true) or 0
 			local rewards = GetNumQuestLogRewards() or 0
 			local coins = GetQuestLogRewardMoney() or 0
 			local experience = GetQuestLogRewardXP() or 0
+			rewardSnapshot = { questID = questID, allowed = true, choices = choices, rewards = rewards, money = coins, xp = experience }
 			if choices > 0 or rewards > 0 or coins > 0 or experience > 0 then
 				Place(rewardsHeader, 18)
 				if choices > 0 then
@@ -206,6 +210,14 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		child:SetHeight(math.max(height + 22, scroll:GetHeight()))
 		scroll:UpdateScrollChildRect()
 		if reset then scroll:SetVerticalScroll(0) end
+	end
+	SLASH_WQLP_REWARDS1 = "/wqlprewards"
+	SlashCmdList.WQLP_REWARDS = function()
+		local info = rewardSnapshot
+		if not info then print("WQLP: no quest reward data rendered yet") return end
+		print(format("WQLP rewards quest=%s allowed=%s choices=%s items=%s copper=%s xp=%s",
+			tostring(info.questID), tostring(info.allowed), tostring(info.choices),
+			tostring(info.rewards), tostring(info.money), tostring(info.xp)))
 	end
 	return Display
 end

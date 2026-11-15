@@ -536,6 +536,13 @@ local function DisplayDetails(resetScroll)
 		detail.ContrastBG:Hide()
 	end
 
+	-- Shared objective FontStrings may be reused across successive detail renders.
+	-- Clear saved offsets before Blizzard lays out the next quest.
+	for line, original in pairs(objectiveAnchors) do
+		line:ClearAllPoints()
+		line:SetPoint(unpack(original))
+		objectiveAnchors[line] = nil
+	end
 	QuestInfo_Display(LOG_TEMPLATE, detailChild)
 
 	questIDText:SetShown(ns.GetOption("showQuestID"))

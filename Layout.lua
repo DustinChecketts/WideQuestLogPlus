@@ -61,6 +61,9 @@ L.REWARDS_GAP = 10
 -- Blizzard's money frames keep their last coin this far inside their right edge, so a money frame
 -- right-aligned to the text column sits this much further right
 L.MONEY_RIGHT_PADDING = 13
+L.OBJECTIVE_INDENT = 22 -- Blizzard leaderboard indent, removed only in Forever detail pane
+L.OBJECTIVE_COUNT_WIDTH = 258 -- Count column inset from the parchment right edge
+L.REWARD_VALUE_X = 176 -- Same left edge for money and XP values
 
 -- The quest ID sits under everything else in the quest details, right-aligned to the text column, two
 -- blank lines down, in the description's font a little smaller

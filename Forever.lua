@@ -469,8 +469,12 @@ questIDRow.Text:SetPoint("RIGHT")
 questIDRow.Text:SetJustifyH("RIGHT")
 
 local function QuestInfo_ShowQuestID()
-	ns.StyleQuestID(questIDRow.Text, C_QuestLog.GetSelectedQuest(), QuestInfoDescriptionText)
-	questIDRow:Show()
+	if ns.GetOption("showQuestID") then
+		ns.StyleQuestID(questIDRow.Text, C_QuestLog.GetSelectedQuest(), QuestInfoDescriptionText)
+		questIDRow:Show()
+	else
+		questIDRow:Hide()
+	end
 	return questIDRow
 end
 
@@ -573,9 +577,9 @@ local function DisplayDetails(resetScroll)
 	-- Gold and experience right-aligned to the text column (see RestoreSharedLayout)
 	local rewardsFrame = QuestInfoRewardsFrame
 	rewardsFrame.MoneyFrame:ClearAllPoints()
-	rewardsFrame.MoneyFrame:SetPoint("RIGHT", rewardsFrame.ItemReceiveText, "LEFT", L.CONTENT_WIDTH + L.MONEY_RIGHT_PADDING, 0)
+	rewardsFrame.MoneyFrame:SetPoint("LEFT", rewardsFrame.ItemReceiveText, "RIGHT", 15, 0)
 	rewardsFrame.XPFrame.ValueText:ClearAllPoints()
-	rewardsFrame.XPFrame.ValueText:SetPoint("RIGHT", rewardsFrame.XPFrame, "LEFT", L.CONTENT_WIDTH, 0)
+	rewardsFrame.XPFrame.ValueText:SetPoint("LEFT", rewardsFrame.XPFrame.ReceiveText, "RIGHT", 15, 0)
 
 	-- The same blank line under the Rewards heading. Blizzard hangs the first reward line just under
 	-- the heading and sizes the rewards block to fit, so move that line down and grow the block to match
@@ -809,6 +813,10 @@ function UpdateAll(resetScroll)
 	DisplayDetails(resetScroll)
 	UpdateButtons()
 end
+
+ns.RegisterOptionsRefresh(function()
+	UpdateAll(false)
+end)
 
 function ShowQuest(questID)
 	selectedQuestID = questID

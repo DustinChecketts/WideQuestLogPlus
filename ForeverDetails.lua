@@ -36,9 +36,11 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	-- Fixed reward shelf: independent of the scrolling text and its anchor chain.
 	-- This is intentionally plain until native Forever atlas names are verified.
 	local footer = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+	footer:SetFrameLevel(scroll:GetFrameLevel() + 5)
 	footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 4, 6)
 	footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -4, 6)
 	footer:SetHeight(91)
+	footer:EnableMouse(false)
 	footer:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12, insets = {left = 3, right = 3, top = 3, bottom = 3}})
 	footer:SetBackdropColor(0.16, 0.09, 0.04, 0.95)
 	local footerHeading = footer:CreateFontString(nil, "ARTWORK", "QuestTitleFont")
@@ -48,6 +50,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	for i = 1, 2 do
 		local card = CreateFrame("Frame", nil, footer, "BackdropTemplate")
 		card:SetSize(170, 34)
+		card:EnableMouse(false)
 		card:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 9, insets = {left = 2, right = 2, top = 2, bottom = 2}})
 		card:SetBackdropColor(0.10, 0.06, 0.025, 0.95)
 		card:SetPoint("TOPLEFT", footer, "TOPLEFT", 9 + (i - 1) * 184, -45)
@@ -204,14 +207,16 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			Place(description, 5)
 		end
 		local allowed = not C_QuestLog.ShouldShowQuestRewards or C_QuestLog.ShouldShowQuestRewards(questID)
-		rewardSnapshot = { questID = questID, allowed = allowed }
+		-- Reward values must be queried for the currently selected quest on every
+		-- render. Do not gate XP/money behind ShouldShowQuestRewards: that flag
+		-- can suppress item reward disclosure independently of visible native XP.
+		local coins = GetQuestLogRewardMoney() or 0
+		local experience = GetQuestLogRewardXP() or 0
+		local choices = allowed and (GetNumQuestLogChoices(questID, true) or 0) or 0
+		local rewards = allowed and (GetNumQuestLogRewards() or 0) or 0
+		rewardSnapshot = { questID = questID, allowed = allowed, choices = choices, rewards = rewards, money = coins, xp = experience }
+		UpdateRewardShelf(coins, experience)
 		if allowed then
-			local choices = GetNumQuestLogChoices(questID, true) or 0
-			local rewards = GetNumQuestLogRewards() or 0
-			local coins = GetQuestLogRewardMoney() or 0
-			local experience = GetQuestLogRewardXP() or 0
-			rewardSnapshot = { questID = questID, allowed = true, choices = choices, rewards = rewards, money = coins, xp = experience }
-			UpdateRewardShelf(coins, experience)
 			if choices > 0 or rewards > 0 then
 				if choices > 0 then
 					Place(choiceLabel, 5)
@@ -236,6 +241,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		print(format("WQLP rewards quest=%s allowed=%s choices=%s items=%s copper=%s xp=%s",
 			tostring(info.questID), tostring(info.allowed), tostring(info.choices),
 			tostring(info.rewards), tostring(info.money), tostring(info.xp)))
+		print("WQLP footer:", "visible=" .. tostring(footer:IsShown()), "height=" .. tostring(footer:GetHeight()), "scrollHeight=" .. tostring(scroll:GetHeight()))
 	end
 	return Display
 end

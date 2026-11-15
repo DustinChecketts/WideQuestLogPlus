@@ -27,6 +27,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local description = Text("QuestFont")
 	local rewardsHeader = Text("QuestTitleFont", QUEST_REWARDS)
 	local receive = Text("QuestFont", REWARD_ITEMS_ONLY or "You will receive:")
+	local choiceLabel = Text("QuestFont", REWARD_CHOICES or "Choose your reward:")
 	local xpLabel = Text("QuestFont", EXPERIENCE_COLON or "Experience:")
 	local money = Text("QuestFont")
 	local xp = Text("QuestFont")
@@ -55,6 +56,9 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local function Clear()
 		for _, region in ipairs(placed) do region:Hide() end
 		for _, region in ipairs(regions) do region:Hide() end
+		money:Hide()
+		xp:Hide()
+		id:Hide()
 		for _, obj in ipairs(objectives) do
 			obj.line:Hide()
 			obj.count:Hide()
@@ -174,7 +178,6 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			if choices > 0 or rewards > 0 or coins > 0 or experience > 0 then
 				Place(rewardsHeader, 18)
 				if choices > 0 then
-					local choiceLabel = Text("QuestFont", REWARD_CHOICES or "Choose your reward:")
 					Place(choiceLabel, 5)
 					AddRewardButtons("choice", choices, 1)
 				end

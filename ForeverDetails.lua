@@ -43,7 +43,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 4, 6)
 	footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -4, 6)
 	footer:SetHeight(91)
-	footer:SetBackdrop({bgFile = "Interface\\\\DialogFrame\\\\UI-DialogBox-Background", edgeFile = "Interface\\\\Tooltips\\\\UI-Tooltip-Border", edgeSize = 12, insets = {left = 3, right = 3, top = 3, bottom = 3}})
+	footer:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12, insets = {left = 3, right = 3, top = 3, bottom = 3}})
 	footer:SetBackdropColor(0.16, 0.09, 0.04, 0.95)
 	local footerHeading = footer:CreateFontString(nil, "ARTWORK", "QuestTitleFont")
 	footerHeading:SetPoint("TOP", 0, -7)
@@ -52,7 +52,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	for i = 1, 2 do
 		local card = CreateFrame("Frame", nil, footer, "BackdropTemplate")
 		card:SetSize(170, 34)
-		card:SetBackdrop({bgFile = "Interface\\\\DialogFrame\\\\UI-DialogBox-Background", edgeFile = "Interface\\\\Tooltips\\\\UI-Tooltip-Border", edgeSize = 9, insets = {left = 2, right = 2, top = 2, bottom = 2}})
+		card:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 9, insets = {left = 2, right = 2, top = 2, bottom = 2}})
 		card:SetBackdropColor(0.10, 0.06, 0.025, 0.95)
 		card:SetPoint("TOPLEFT", footer, "TOPLEFT", 9 + (i - 1) * 184, -45)
 		local icon = card:CreateTexture(nil, "ARTWORK")
@@ -65,17 +65,19 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	end
 	local function UpdateRewardShelf(moneyValue, experienceValue)
 		local entries = {}
-		if experienceValue > 0 then entries[#entries + 1] = {"Interface\\\\Icons\\\\XP_Icon", tostring(experienceValue)} end
-		if moneyValue > 0 then entries[#entries + 1] = {"Interface\\\\Icons\\\\INV_Misc_Coin_01", GetCoinTextureString(moneyValue)} end
+		if experienceValue > 0 then entries[#entries + 1] = {"XP", tostring(experienceValue)} end
+		if moneyValue > 0 then entries[#entries + 1] = {"", GetCoinTextureString(moneyValue)} end
 		footer:SetShown(#entries > 0)
 		for i, card in ipairs(rewardCards) do
 			local entry = entries[i]
 			card.frame:SetShown(entry ~= nil)
 			if entry then
-				card.icon:SetTexture(entry[1])
-				card.value:SetText(entry[2])
+				card.icon:SetTexture(nil)
+				card.value:SetText((entry[1] ~= "" and (entry[1] .. "  ") or "") .. entry[2])
 			end
 		end
+		scroll:ClearAllPoints()
+		scroll:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, -2)
 		scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, #entries > 0 and 102 or 2)
 	end
 	local objectives = {}

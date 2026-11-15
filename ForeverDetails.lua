@@ -80,21 +80,14 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	end
 	local function AddObjective(i, value, finished)
 		local obj = Objective(i)
-		local name, have, need = value:match("^(.-):%s*(%d+)%s*/%s*(%d+)%s*$")
-		if not name then
-			have, need, name = value:match("^%s*(%d+)%s*/%s*(%d+)%s+(.+)$")
-		end
-		local counter = have and (have .. " / " .. need) or nil
-		obj.line:SetText((finished and "|TInterface\\RaidFrame\\ReadyCheck-Ready:0|t " or "") .. (name or value))
-		obj.line:SetWidth(counter and width - 85 or width)
+		-- Forever's leaderboard commonly reports "0/8 Creature slain". Keep the
+		-- complete localized text and let the font string wrap as one paragraph.
+		-- Parsing and separating the count caused incorrect order and indentation.
+		obj.line:SetWidth(width)
+		obj.line:SetText(value or "")
 		Place(obj.line, i == 1 and 10 or 2)
-		if counter then
-			obj.count:SetText(counter)
-			obj.count:ClearAllPoints()
-			obj.count:SetPoint("TOPRIGHT", obj.line, "TOPLEFT", width - 32, 0)
-			obj.count:Show()
-		end
 	end
+
 	local function RewardButton(i, kind, index, name, texture, count)
 		local button = buttons[i]
 		if not button then
@@ -186,8 +179,10 @@ function ns.CreateForeverDetails(parent, scroll, L)
 					Place(choiceLabel, 5)
 					AddRewardButtons("choice", choices, 1)
 				end
-				if rewards > 0 or coins > 0 or experience > 0 then
+				if rewards > 0 or coins > 0 then
 					Place(receive, 8)
+				end
+				if rewards > 0 or coins > 0 or experience > 0 then
 					if coins > 0 then
 						money:SetText(GetCoinTextureString(coins))
 						money:ClearAllPoints()
@@ -195,13 +190,13 @@ function ns.CreateForeverDetails(parent, scroll, L)
 						money:Show()
 					end
 					if experience > 0 then
-						Place(xpLabel, 4)
+						Place(xpLabel, coins > 0 and 4 or 8)
 						xp:SetText(BreakUpLargeNumbers and BreakUpLargeNumbers(experience) or tostring(experience))
 						xp:ClearAllPoints()
 						xp:SetPoint("TOPLEFT", xpLabel, "TOPLEFT", L.REWARD_VALUE_X - 48, 0)
 						xp:Show()
 					end
-					AddRewardButtons("reward", rewards, choices + 1)
+					if rewards > 0 then AddRewardButtons("reward", rewards, choices + 1) end
 				end
 			end
 		end

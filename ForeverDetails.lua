@@ -37,6 +37,47 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	id:SetWidth(80)
 	id:SetPoint("TOPRIGHT", parent, "TOPLEFT", x + width, -yStart)
 	id:SetDrawLayer("OVERLAY", 7)
+	-- Fixed reward shelf: independent of the scrolling text and its anchor chain.
+	-- This is intentionally plain until native Forever atlas names are verified.
+	local footer = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+	footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 4, 6)
+	footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -4, 6)
+	footer:SetHeight(91)
+	footer:SetBackdrop({bgFile = "Interface\\\\DialogFrame\\\\UI-DialogBox-Background", edgeFile = "Interface\\\\Tooltips\\\\UI-Tooltip-Border", edgeSize = 12, insets = {left = 3, right = 3, top = 3, bottom = 3}})
+	footer:SetBackdropColor(0.16, 0.09, 0.04, 0.95)
+	local footerHeading = footer:CreateFontString(nil, "ARTWORK", "QuestTitleFont")
+	footerHeading:SetPoint("TOP", 0, -7)
+	footerHeading:SetText(QUEST_REWARDS or "Rewards")
+	local rewardCards = {}
+	for i = 1, 2 do
+		local card = CreateFrame("Frame", nil, footer, "BackdropTemplate")
+		card:SetSize(170, 34)
+		card:SetBackdrop({bgFile = "Interface\\\\DialogFrame\\\\UI-DialogBox-Background", edgeFile = "Interface\\\\Tooltips\\\\UI-Tooltip-Border", edgeSize = 9, insets = {left = 2, right = 2, top = 2, bottom = 2}})
+		card:SetBackdropColor(0.10, 0.06, 0.025, 0.95)
+		card:SetPoint("TOPLEFT", footer, "TOPLEFT", 9 + (i - 1) * 184, -45)
+		local icon = card:CreateTexture(nil, "ARTWORK")
+		icon:SetSize(28, 28)
+		icon:SetPoint("LEFT", 4, 0)
+		local value = card:CreateFontString(nil, "ARTWORK", "QuestFont")
+		value:SetPoint("LEFT", icon, "RIGHT", 5, 0)
+		value:SetJustifyH("LEFT")
+		rewardCards[i] = {frame = card, icon = icon, value = value}
+	end
+	local function UpdateRewardShelf(moneyValue, experienceValue)
+		local entries = {}
+		if experienceValue > 0 then entries[#entries + 1] = {"Interface\\\\Icons\\\\XP_Icon", tostring(experienceValue)} end
+		if moneyValue > 0 then entries[#entries + 1] = {"Interface\\\\Icons\\\\INV_Misc_Coin_01", GetCoinTextureString(moneyValue)} end
+		footer:SetShown(#entries > 0)
+		for i, card in ipairs(rewardCards) do
+			local entry = entries[i]
+			card.frame:SetShown(entry ~= nil)
+			if entry then
+				card.icon:SetTexture(entry[1])
+				card.value:SetText(entry[2])
+			end
+		end
+		scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, #entries > 0 and 102 or 2)
+	end
 	local objectives = {}
 	local buttons = {}
 	local placed = {}
@@ -56,6 +97,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		placed[#placed + 1] = region
 	end
 	local function Clear()
+		UpdateRewardShelf(0, 0)
 		for _, region in ipairs(placed) do region:Hide() end
 		for _, region in ipairs(regions) do region:Hide() end
 		money:Hide()
@@ -173,7 +215,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			local coins = GetQuestLogRewardMoney() or 0
 			local experience = GetQuestLogRewardXP() or 0
 			rewardSnapshot = { questID = questID, allowed = true, choices = choices, rewards = rewards, money = coins, xp = experience }
-			if choices > 0 or rewards > 0 or coins > 0 or experience > 0 then
+			UpdateRewardShelf(coins, experience)
+			if choices > 0 or rewards > 0 then
 				Place(rewardsHeader, 18)
 				if choices > 0 then
 					Place(choiceLabel, 5)
@@ -182,14 +225,14 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				if rewards > 0 or coins > 0 then
 					Place(receive, 8)
 				end
-				if rewards > 0 or coins > 0 or experience > 0 then
-					if coins > 0 then
+				if rewards > 0 then
+					if false and coins > 0 then
 						money:SetText(GetCoinTextureString(coins))
 						money:ClearAllPoints()
 						money:SetPoint("TOPLEFT", receive, "TOPLEFT", L.REWARD_VALUE_X - 48, 0)
 						money:Show()
 					end
-					if experience > 0 then
+					if false and experience > 0 then
 						Place(xpLabel, coins > 0 and 4 or 8)
 						xp:SetText(BreakUpLargeNumbers and BreakUpLargeNumbers(experience) or tostring(experience))
 						xp:ClearAllPoints()

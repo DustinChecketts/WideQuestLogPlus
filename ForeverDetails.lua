@@ -26,12 +26,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local summary = Text("QuestFont")
 	local descriptionHeader = Text("QuestTitleFont", QUEST_DESCRIPTION)
 	local description = Text("QuestFont")
-	local rewardsHeader = Text("QuestTitleFont", QUEST_REWARDS)
 	local receive = Text("QuestFont", REWARD_ITEMS_ONLY or "You will receive:")
 	local choiceLabel = Text("QuestFont", REWARD_CHOICES or "Choose your reward:")
-	local xpLabel = Text("QuestFont", EXPERIENCE_COLON or "Experience:")
-	local money = Text("QuestFont")
-	local xp = Text("QuestFont")
 	local id = parent:CreateFontString(nil, "OVERLAY", "QuestFontNormalSmall")
 	id:SetJustifyH("RIGHT")
 	id:SetWidth(80)
@@ -102,8 +98,6 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		UpdateRewardShelf(0, 0)
 		for _, region in ipairs(placed) do region:Hide() end
 		for _, region in ipairs(regions) do region:Hide() end
-		money:Hide()
-		xp:Hide()
 		id:Hide()
 		for _, obj in ipairs(objectives) do
 			obj.line:Hide()
@@ -219,7 +213,6 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			rewardSnapshot = { questID = questID, allowed = true, choices = choices, rewards = rewards, money = coins, xp = experience }
 			UpdateRewardShelf(coins, experience)
 			if choices > 0 or rewards > 0 then
-				Place(rewardsHeader, 18)
 				if choices > 0 then
 					Place(choiceLabel, 5)
 					AddRewardButtons("choice", choices, 1)
@@ -227,22 +220,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				if rewards > 0 or coins > 0 then
 					Place(receive, 8)
 				end
-				if rewards > 0 then
-					if false and coins > 0 then
-						money:SetText(GetCoinTextureString(coins))
-						money:ClearAllPoints()
-						money:SetPoint("TOPLEFT", receive, "TOPLEFT", L.REWARD_VALUE_X - 48, 0)
-						money:Show()
-					end
-					if false and experience > 0 then
-						Place(xpLabel, coins > 0 and 4 or 8)
-						xp:SetText(BreakUpLargeNumbers and BreakUpLargeNumbers(experience) or tostring(experience))
-						xp:ClearAllPoints()
-						xp:SetPoint("TOPLEFT", xpLabel, "TOPLEFT", L.REWARD_VALUE_X - 48, 0)
-						xp:Show()
-					end
-					if rewards > 0 then AddRewardButtons("reward", rewards, choices + 1) end
-				end
+				if rewards > 0 then AddRewardButtons("reward", rewards, choices + 1) end
 			end
 		end
 		id:SetText(ns.QuestIDText(questID))

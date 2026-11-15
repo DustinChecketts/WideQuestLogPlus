@@ -461,22 +461,11 @@ local function QuestInfoInUseElsewhere()
 	return (mapDetails and mapDetails:IsVisible()) and true or false
 end
 
--- The quest ID, right-aligned under the rewards (or whatever comes last), in the description's colour
-local questIDRow = CreateFrame("Frame", nil, detailChild)
-questIDRow:SetSize(L.CONTENT_WIDTH, 14)
-questIDRow.Text = questIDRow:CreateFontString(nil, "ARTWORK", "QuestFontNormalSmall")
-questIDRow.Text:SetPoint("RIGHT")
-questIDRow.Text:SetJustifyH("RIGHT")
-
-local function QuestInfo_ShowQuestID()
-	if ns.GetOption("showQuestID") then
-		ns.StyleQuestID(questIDRow.Text, C_QuestLog.GetSelectedQuest(), QuestInfoDescriptionText)
-		questIDRow:Show()
-	else
-		questIDRow:Hide()
-	end
-	return questIDRow
-end
+-- Quest ID sits at the upper-right of the parchment, outside Blizzard's content flow.
+local questIDText = detailChild:CreateFontString(nil, "ARTWORK", "QuestFontNormalSmall")
+questIDText:SetPoint("TOPRIGHT", detailChild, "TOPLEFT", L.CONTENT_LEFT - L.PARCHMENT_LEFT + L.CONTENT_WIDTH, -(L.CONTENT_TOP - PANE_TOP))
+questIDText:SetJustifyH("RIGHT")
+questIDText:Hide()
 
 -- Blizzard's QUEST_TEMPLATE_LOG lays out the description, objectives and rewards in one column, as
 -- Classic did. A copy of it is placed and spaced to the shared layout, with the quest ID added at the end
@@ -499,25 +488,26 @@ do
 			elements[index + 2] = -L.REWARDS_GAP
 		end
 	end
-	for index = 1, #elements, 3 do
-		if (elements[index] == QuestInfo_ShowSpacer) then
-			tinsert(elements, index, -L.QUEST_ID_GAP)
-			tinsert(elements, index, 0)
-			tinsert(elements, index, QuestInfo_ShowQuestID)
-			break
-		end
-	end
+
 end
 
 -- The quest giver window and the map's quest details use the same objective lines and reward frames,
 -- laid out Blizzard's way, so they go back to Blizzard's font and positions, without this addon's
 -- count column, whenever anything else displays quest info
+local objectiveAnchors = setmetatable({}, {__mode = "k"})
+
 local function RestoreSharedLayout(_, parentFrame)
 	if (parentFrame == detailChild) then
 		return
 	end
 	ns.ClearObjectiveCounts()
 	for _, line in ipairs(QuestInfoObjectivesFrame.Objectives or {}) do
+		local original = objectiveAnchors[line]
+		if original then
+			line:ClearAllPoints()
+			line:SetPoint(unpack(original))
+			objectiveAnchors[line] = nil
+		end
 		local r, g, b, a = line:GetTextColor()
 		line:SetFontObject(QuestFontNormalSmall)
 		line:SetTextColor(r, g, b, a)
@@ -548,6 +538,11 @@ local function DisplayDetails(resetScroll)
 
 	QuestInfo_Display(LOG_TEMPLATE, detailChild)
 
+	questIDText:SetShown(ns.GetOption("showQuestID"))
+	if ns.GetOption("showQuestID") then
+		ns.StyleQuestID(questIDText, selectedQuestID, QuestInfoDescriptionText)
+	end
+
 	-- Just the quest's name: Blizzard decorates it with the quest type's icon, and that and the level
 	-- are already in the list
 	local title = C_QuestLog.GetTitleForQuestID(selectedQuestID)
@@ -569,17 +564,26 @@ local function DisplayDetails(resetScroll)
 			lineIndex = lineIndex + 1
 			local line = lines and lines[lineIndex]
 			if (line and line:IsShown()) then
-				ns.StyleObjective(line, (text and text ~= "") and text or objectiveType, finished, L.CONTENT_WIDTH, QuestInfoDescriptionText)
+				-- Blizzard offsets leaderboard text inside the objective column. Remove
+				-- that indentation while retaining the original anchor for other quest UIs.
+				if not objectiveAnchors[line] and line:GetNumPoints() == 1 then
+					local point, relativeTo, relativePoint, x, y = line:GetPoint(1)
+					if x then
+						objectiveAnchors[line] = {point, relativeTo, relativePoint, x, y}
+						line:SetPoint(point, relativeTo, relativePoint, x - L.OBJECTIVE_INDENT, y)
+					end
+				end
+				ns.StyleObjective(line, (text and text ~= "") and text or objectiveType, finished, L.OBJECTIVE_COUNT_WIDTH, QuestInfoDescriptionText)
 			end
 		end
 	end
 
-	-- Gold and experience right-aligned to the text column (see RestoreSharedLayout)
+	-- Align money and XP values in one column while preserving their native reward frames.
 	local rewardsFrame = QuestInfoRewardsFrame
 	rewardsFrame.MoneyFrame:ClearAllPoints()
-	rewardsFrame.MoneyFrame:SetPoint("LEFT", rewardsFrame.ItemReceiveText, "RIGHT", 15, 0)
+	rewardsFrame.MoneyFrame:SetPoint("LEFT", rewardsFrame.ItemReceiveText, "LEFT", L.REWARD_VALUE_X, 0)
 	rewardsFrame.XPFrame.ValueText:ClearAllPoints()
-	rewardsFrame.XPFrame.ValueText:SetPoint("LEFT", rewardsFrame.XPFrame.ReceiveText, "RIGHT", 15, 0)
+	rewardsFrame.XPFrame.ValueText:SetPoint("LEFT", rewardsFrame.XPFrame.ReceiveText, "LEFT", L.REWARD_VALUE_X, 0)
 
 	-- The same blank line under the Rewards heading. Blizzard hangs the first reward line just under
 	-- the heading and sizes the rewards block to fit, so move that line down and grow the block to match

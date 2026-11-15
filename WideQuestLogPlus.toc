@@ -11,6 +11,7 @@
 Compat.lua
 Layout.lua
 Common.lua
+Options.lua
 
 Classic.lua
 Forever.lua

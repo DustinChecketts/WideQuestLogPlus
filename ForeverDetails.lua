@@ -31,10 +31,11 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local xpLabel = Text("QuestFont", EXPERIENCE_COLON or "Experience:")
 	local money = Text("QuestFont")
 	local xp = Text("QuestFont")
-	local id = Text("QuestFontNormalSmall")
+	local id = parent:CreateFontString(nil, "OVERLAY", "QuestFontNormalSmall")
 	id:SetJustifyH("RIGHT")
 	id:SetWidth(80)
-	id:SetPoint("TOPRIGHT", child, "TOPLEFT", x + width, -yStart)
+	id:SetPoint("TOPRIGHT", parent, "TOPLEFT", x + width, -yStart)
+	id:SetDrawLayer("OVERLAY", 7)
 	local objectives = {}
 	local buttons = {}
 	local placed = {}
@@ -96,7 +97,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local function RewardButton(i, kind, index, name, texture, count)
 		local button = buttons[i]
 		if not button then
-			button = CreateFrame("Button", nil, child, "QuestInfoItemButtonTemplate")
+			button = CreateFrame("Button", nil, child, "LargeItemButtonTemplate")
 			button:SetSize(147, 37)
 			button:EnableMouse(true)
 			button:SetScript("OnEnter", function(self)
@@ -171,7 +172,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			Place(description, 5)
 		end
 		if not C_QuestLog.ShouldShowQuestRewards or C_QuestLog.ShouldShowQuestRewards(questID) then
-			local choices = GetNumQuestLogChoices() or 0
+			local choices = GetNumQuestLogChoices(questID, true) or 0
 			local rewards = GetNumQuestLogRewards() or 0
 			local coins = GetQuestLogRewardMoney() or 0
 			local experience = GetQuestLogRewardXP() or 0
@@ -200,8 +201,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				end
 			end
 		end
-		id:SetShown(ns.GetOption("showQuestID"))
 		id:SetText(ns.QuestIDText(questID))
+		id:SetShown(ns.GetOption("showQuestID"))
 		child:SetHeight(math.max(height + 22, scroll:GetHeight()))
 		scroll:UpdateScrollChildRect()
 		if reset then scroll:SetVerticalScroll(0) end

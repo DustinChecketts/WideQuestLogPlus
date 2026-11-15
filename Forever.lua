@@ -494,20 +494,24 @@ end
 -- The quest giver window and the map's quest details use the same objective lines and reward frames,
 -- laid out Blizzard's way, so they go back to Blizzard's font and positions, without this addon's
 -- count column, whenever anything else displays quest info
-local objectiveAnchors = setmetatable({}, {__mode = "k"})
+-- Overlay the objective text without moving Blizzard's anchor chain. Other
+-- detail elements can be positioned relative to the original objective lines.
+local objectiveOverlays = setmetatable({}, {__mode = "k"})
+
+local function ClearObjectiveOverlays()
+	for line, overlay in pairs(objectiveOverlays) do
+		line:SetAlpha(1)
+		overlay:Hide()
+	end
+end
 
 local function RestoreSharedLayout(_, parentFrame)
 	if (parentFrame == detailChild) then
 		return
 	end
 	ns.ClearObjectiveCounts()
+	ClearObjectiveOverlays()
 	for _, line in ipairs(QuestInfoObjectivesFrame.Objectives or {}) do
-		local original = objectiveAnchors[line]
-		if original then
-			line:ClearAllPoints()
-			line:SetPoint(unpack(original))
-			objectiveAnchors[line] = nil
-		end
 		local r, g, b, a = line:GetTextColor()
 		line:SetFontObject(QuestFontNormalSmall)
 		line:SetTextColor(r, g, b, a)
@@ -536,13 +540,7 @@ local function DisplayDetails(resetScroll)
 		detail.ContrastBG:Hide()
 	end
 
-	-- Shared objective FontStrings may be reused across successive detail renders.
-	-- Clear saved offsets before Blizzard lays out the next quest.
-	for line, original in pairs(objectiveAnchors) do
-		line:ClearAllPoints()
-		line:SetPoint(unpack(original))
-		objectiveAnchors[line] = nil
-	end
+	ClearObjectiveOverlays()
 	QuestInfo_Display(LOG_TEMPLATE, detailChild)
 
 	questIDText:SetShown(ns.GetOption("showQuestID"))
@@ -571,16 +569,23 @@ local function DisplayDetails(resetScroll)
 			lineIndex = lineIndex + 1
 			local line = lines and lines[lineIndex]
 			if (line and line:IsShown()) then
-				-- Blizzard offsets leaderboard text inside the objective column. Remove
-				-- that indentation while retaining the original anchor for other quest UIs.
-				if not objectiveAnchors[line] and line:GetNumPoints() == 1 then
-					local point, relativeTo, relativePoint, x, y = line:GetPoint(1)
-					if x then
-						objectiveAnchors[line] = {point, relativeTo, relativePoint, x, y}
-						line:SetPoint(point, relativeTo, relativePoint, x - L.OBJECTIVE_INDENT, y)
-					end
+				-- Keep the native objective line anchored for Blizzard's layout.
+				-- A separate text overlay removes its visual indentation only.
+				local overlay = objectiveOverlays[line]
+				if not overlay then
+					overlay = line:GetParent():CreateFontString(nil, "ARTWORK")
+					overlay:SetJustifyH("LEFT")
+					objectiveOverlays[line] = overlay
 				end
-				ns.StyleObjective(line, (text and text ~= "") and text or objectiveType, finished, L.OBJECTIVE_COUNT_WIDTH, QuestInfoDescriptionText)
+				overlay:ClearAllPoints()
+				overlay:SetPoint("TOPLEFT", line, "TOPLEFT", -L.OBJECTIVE_INDENT, 0)
+				overlay:SetWidth(L.OBJECTIVE_COUNT_WIDTH)
+				overlay:SetFontObject(line:GetFontObject() or QuestFontNormalSmall)
+				local r, g, b, alpha = line:GetTextColor()
+				overlay:SetTextColor(r, g, b, alpha)
+				line:SetAlpha(0)
+				overlay:Show()
+				ns.StyleObjective(overlay, (text and text ~= "") and text or objectiveType, finished, L.OBJECTIVE_COUNT_WIDTH, QuestInfoDescriptionText)
 			end
 		end
 	end

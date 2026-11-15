@@ -68,10 +68,10 @@ L.QUEST_ID_GAP = 10
 L.QUEST_ID_FONT_SHRINK = 2
 
 -- Quest list rows: zone headers have their +/- at the left and their name after it; quest titles sit
--- further in, after a slot for the tracking check that's there whether the quest is tracked or not
+-- aligned with header text; tracking check occupies the left icon gutter
 L.HEADER_TEXT_X = 20
-L.CHECK_X = 18
-L.QUEST_TEXT_X = L.CHECK_X + 16
+L.CHECK_X = 2
+L.QUEST_TEXT_X = L.HEADER_TEXT_X
 
 -- Blank space above every zone header in the quest list except the first
 L.HEADER_GAP = 0

@@ -107,7 +107,9 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			local textBackground = card:CreateTexture(nil, "BACKGROUND")
 			-- Reuse the native quest item name background, not a flat color block.
 			textBackground:SetTexture("Interface\\QuestFrame\\UI-QuestItemNameFrame")
-			textBackground:SetSize(128, 64)
+			-- Keep the Blizzard name-frame art, but scale its rendered height to
+			-- the 32px reward icon instead of the oversized 64px template art.
+			textBackground:SetSize(128, 48)
 			textBackground:SetPoint("LEFT", card, "LEFT", 29, 0)
 			card.text = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 			card.text:SetTextColor(1, 1, 1)
@@ -115,7 +117,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			local fontPath, fontSize, fontFlags = card.text:GetFont()
 			if fontPath then card.text:SetFont("Fonts\\ARIALN.TTF", math.max(fontSize, 14), fontFlags) end
 			card.icon = card:CreateTexture(nil, "ARTWORK")
-			card.icon:SetSize(34, 34)
+			card.icon:SetSize(32, 32)
 			card.icon:SetPoint("LEFT", 0, 0)
 			card.text:SetPoint("LEFT", card, "LEFT", 44, 0)
 			card.text:SetJustifyH("LEFT")
@@ -180,8 +182,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				local column = (i - 1) % 2
 				button:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + column * (cardWidth + 6), -row)
 				button:SetSize(cardWidth, rewardRowHeight)
-				-- Native LargeItemButtonTemplate uses 128x64 name art.
-				if button.NameFrame then button.NameFrame:SetSize(128, 64) end
+				-- Use native name art, with a shorter displayed height to match the map rewards.
+				if button.NameFrame then button.NameFrame:SetSize(128, 48) end
 				button.Icon:SetSize(32, 32)
 				button.Name:SetWidth(math.min(90, cardWidth - 58))
 				button.Icon:SetTexture(reward.texture)

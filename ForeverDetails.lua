@@ -168,13 +168,16 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		local available = math.max(190, parent:GetWidth() - 24)
 		local cardWidth = math.floor((available - 8) / 2)
 		local function AddLabel(value)
+			-- Compact, balanced section spacing close to Blizzard's native rewards.
+			-- The first label already has space beneath the Rewards heading.
+			if labelIndex > 0 then row = row + 3 end
 			labelIndex = labelIndex + 1
 			local label = RewardLabel(labelIndex)
 			label:ClearAllPoints()
 			label:SetPoint("TOPLEFT", footer, "TOPLEFT", 12, -row)
 			label:SetText(value)
 			label:Show()
-			row = row + math.max(16, label:GetStringHeight() + 3)
+			row = row + math.max(16, label:GetStringHeight()) + 3
 		end
 		local function AddItems(items)
 			for i, reward in ipairs(items) do
@@ -259,17 +262,18 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			AddItems(data.guaranteed)
 		end
 		-- Avoid an extra empty strip below the last reward row.
-		local footerHeight = hasRewards and row + 2 or 0
-		-- Extend the native rewards art through the parchment's lower inset.
-		local lowerInset = hasRewards and 16 or 0
-		footer:SetHeight(footerHeight + lowerInset)
+		local footerHeight = hasRewards and row + 10 or 0
+		-- Keep the footer entirely inside the detail viewport. Extending it below
+		-- the viewport overlaps the quest-log action buttons at some UI scales.
+		local lowerInset = 0
+		footer:SetHeight(footerHeight)
 		local fixed = ns.GetOption("alwaysShowFullRewards")
 		if fixed then
 			if footer:GetParent() ~= parent then footer:SetParent(parent) end
 			footer:SetFrameLevel(scroll:GetFrameLevel() + 5)
 			footer:ClearAllPoints()
-			footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 0, -lowerInset)
-			footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, -lowerInset)
+			footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 0, 0)
+			footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, 0)
 		else
 			-- Native-style flow: the same reward controls follow the quest text
 			-- inside the scroll child rather than occupying a separate viewport.
@@ -396,6 +400,43 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		child:SetHeight(math.max(height + (not fixed and footerHeight > 0 and footerHeight + 28 or 22), scroll:GetHeight()))
 		scroll:UpdateScrollChildRect()
 		-- Always start at the title when selecting a quest.\n\t\tscroll:SetVerticalScroll(0)
+	end
+	-- Read-only comparison of the native QuestMapFrame art and our detail viewport.
+	-- Run while Blizzard's map quest details are visible. No textures are changed.
+	SLASH_WQLP_ART1 = "/wqlpart"
+	SlashCmdList.WQLP_ART = function()
+		local native = QuestMapFrame and QuestMapFrame.DetailsFrame
+		print("WQLP art diagnostic: native details=" .. tostring(native ~= nil))
+		local function Inspect(label, target)
+			if not target then return end
+			print(format("WQLP %s: %.1fx%.1f scale=%.2f shown=%s", label,
+				target:GetWidth() or 0, target:GetHeight() or 0,
+				target:GetEffectiveScale() or 1, tostring(target:IsShown())))
+			local count = 0
+			local function Scan(frame, depth)
+				if count >= 24 or depth > 2 then return end
+				for _, region in ipairs({frame:GetRegions()}) do
+					if region:GetObjectType() == "Texture" then
+						local atlas = region.GetAtlas and region:GetAtlas()
+						local texture = region.GetTexture and region:GetTexture()
+						if atlas or texture then
+							count = count + 1
+							print(format("WQLP art %d %s %s %.0fx%.0f", count,
+								tostring(atlas or texture), tostring(region:GetDrawLayer()),
+								region:GetWidth() or 0, region:GetHeight() or 0))
+						end
+					end
+					if count >= 24 then return end
+				end
+				for _, subframe in ipairs({frame:GetChildren()}) do Scan(subframe, depth + 1) end
+			end
+			Scan(target, 0)
+		end
+		Inspect("native", native)
+		Inspect("addon", parent)
+		print(format("WQLP footer: height=%.1f bottom=%.1f detailBottom=%.1f scrollHeight=%.1f",
+			footer:GetHeight() or 0, footer:GetBottom() or 0,
+			parent:GetBottom() or 0, scroll:GetHeight() or 0))
 	end
 	SLASH_WQLP_REWARDS1 = "/wqlprewards"
 	SlashCmdList.WQLP_REWARDS = function()

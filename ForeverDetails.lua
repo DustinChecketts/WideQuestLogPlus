@@ -358,7 +358,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		if tagAtlas then
 			titleTag:SetAtlas(tagAtlas)
 			titleTag:ClearAllPoints()
-			titleTag:SetPoint("TOPLEFT", child, "TOPLEFT", x, -yStart - 2)
+			-- Align the tag icon to the rendered title line, not a fixed top offset.
+			titleTag:SetPoint("LEFT", title, "LEFT", -24, 0)
 			titleTag:Show()
 			title:ClearAllPoints()
 			title:SetPoint("TOPLEFT", child, "TOPLEFT", x + 24, -yStart)

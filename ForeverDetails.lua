@@ -101,10 +101,10 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			textBackground:SetPoint("TOPLEFT", card, "TOPLEFT", 39, 0)
 			textBackground:SetPoint("BOTTOMRIGHT", card, "BOTTOMRIGHT", 0, 0)
 			card.text = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-			card.text:SetTextColor(0.902, 0.788, 0.671)
+			card.text:SetTextColor(1, 1, 1)
 			-- Use the client's narrow UI font instead of the parchment quest font.
 			local fontPath, fontSize, fontFlags = card.text:GetFont()
-			if fontPath then card.text:SetFont("Fonts\\ARIALN.TTF", math.min(fontSize, 13), fontFlags) end
+			if fontPath then card.text:SetFont("Fonts\\ARIALN.TTF", math.max(fontSize, 14), fontFlags) end
 			card.icon = card:CreateTexture(nil, "ARTWORK")
 			card.icon:SetSize(34, 34)
 			card.icon:SetPoint("LEFT", 0, 0)
@@ -170,18 +170,17 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				local column = (i - 1) % 2
 				button:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + column * (cardWidth + 6), -row)
 				button:SetWidth(cardWidth)
-			button:SetHeight(33)
+			button:SetHeight(32)
+			if button.NameFrame then button.NameFrame:SetHeight(32) end
 			button.Icon:SetSize(32, 32)
 				button.Icon:SetTexture(reward.texture)
 				button.Name:SetText(reward.name or "")
-				button.Name:SetTextColor(0.902, 0.788, 0.671)
+				button.Name:SetTextColor(1, 1, 1)
 			-- The item template exposes an icon-quality border on supported clients.
-			if button.IconBorder then
-				local quality = reward.quality
-				local color = quality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[quality]
-				button.IconBorder:SetShown(color ~= nil and quality > 1)
-				if color then button.IconBorder:SetVertexColor(color.r, color.g, color.b) end
-			end
+			-- Blizzard's IconBorder is a circular quality ring, not the square
+			-- item-quality edge used by the quest reward presentation.
+			-- Do not show that ring as a substitute for a border.
+			if button.IconBorder then button.IconBorder:Hide() end
 			local nameFont, nameSize, nameFlags = button.Name:GetFont()
 			if nameFont and nameSize > 11 then button.Name:SetFont(nameFont, 11, nameFlags) end
 				button.Count:SetText((reward.count or 1) > 1 and reward.count or "")
@@ -210,8 +209,9 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				local card = ValueCard(valueIndex)
 				card:ClearAllPoints()
 				card:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + (i - 1) * (cardWidth + 6), -row)
-				card:SetSize(cardWidth, 35)
+				card:SetSize(cardWidth, 34)
 				card.text:SetText(value.text)
+				card.text:SetTextColor(1, 1, 1)
 				if value.xp then
 					card.icon:SetTexture("Interface\\Icons\\XP_Icon")
 				else

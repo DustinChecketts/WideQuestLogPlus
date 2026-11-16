@@ -46,8 +46,10 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local valueCards = {}
 	local function RewardLabel(i)
 		if not rewardLabels[i] then
-			rewardLabels[i] = footer:CreateFontString(nil, "ARTWORK", "QuestFont")
+			rewardLabels[i] = footer:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
 			rewardLabels[i]:SetJustifyH("LEFT")
+			rewardLabels[i]:SetWidth(math.max(150, parent:GetWidth() - 34))
+			rewardLabels[i]:SetWordWrap(true)
 		end
 		return rewardLabels[i]
 	end
@@ -83,7 +85,10 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			card:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 9, insets = {left = 2, right = 2, top = 2, bottom = 2}})
 			card:SetBackdropColor(0.10, 0.06, 0.025, 0.95)
 			card.text = card:CreateFontString(nil, "ARTWORK", "QuestFont")
-			card.text:SetPoint("LEFT", 8, 0)
+			card.icon = card:CreateTexture(nil, "ARTWORK")
+			card.icon:SetSize(28, 28)
+			card.icon:SetPoint("LEFT", 3, 0)
+			card.text:SetPoint("LEFT", card.icon, "RIGHT", 5, 0)
 			card.text:SetJustifyH("LEFT")
 			valueCards[i] = card
 		end
@@ -124,7 +129,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		for _, card in ipairs(valueCards) do card:Hide() end
 		local hasRewards = #data.choices > 0 or #data.guaranteed > 0 or data.money > 0 or data.xp > 0
 		footer:SetShown(hasRewards)
-		local row, buttonIndex, labelIndex, valueIndex = 32, 0, 0, 0
+		local row, buttonIndex, labelIndex, valueIndex = 29, 0, 0, 0
 		local available = math.max(190, parent:GetWidth() - 34)
 		local cardWidth = math.floor((available - 8) / 2)
 		local function AddLabel(value)
@@ -134,7 +139,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			label:SetPoint("TOPLEFT", footer, "TOPLEFT", 12, -row)
 			label:SetText(value)
 			label:Show()
-			row = row + 19
+			row = row + math.max(15, label:GetStringHeight() + 3)
 		end
 		local function AddItems(items)
 			for i, reward in ipairs(items) do
@@ -147,12 +152,10 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				button:SetWidth(cardWidth)
 				button.Icon:SetTexture(reward.texture)
 				button.Name:SetText(reward.name or "")
-				local quality = reward.quality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[reward.quality]
-				if quality and reward.quality > 1 then button.Name:SetTextColor(1, 1, 1)
-				else button.Name:SetTextColor(1, 1, 1) end
+				button.Name:SetTextColor(1, 1, 1)
 				button.Count:SetText((reward.count or 1) > 1 and reward.count or "")
 				button:Show()
-				if column == 1 or i == #items then row = row + 41 end
+				if column == 1 or i == #items then row = row + 39 end
 			end
 		end
 		if #data.choices > 0 then
@@ -162,14 +165,14 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		if #data.guaranteed > 0 or data.money > 0 or data.xp > 0 then
 			AddLabel(#data.choices > 0 and (REWARD_ITEMS or "You will also receive:") or (REWARD_ITEMS_ONLY or "You will receive:"))
 			local values = {}
-			if data.xp > 0 then values[#values + 1] = "XP  " .. BreakUpLargeNumbers(data.xp) end
+			if data.xp > 0 then values[#values + 1] = {text = BreakUpLargeNumbers(data.xp), xp = true} end
 			if data.money > 0 then
 				local formatted = tostring(data.money) .. " copper"
 				if type(GetCoinTextureString) == "function" then
 					local ok, value = pcall(GetCoinTextureString, data.money)
 					if ok and type(value) == "string" and value ~= "" then formatted = value end
 				end
-				values[#values + 1] = formatted
+				values[#values + 1] = {text = formatted, money = true}
 			end
 			for i, value in ipairs(values) do
 				valueIndex = valueIndex + 1
@@ -177,10 +180,15 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				card:ClearAllPoints()
 				card:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + (i - 1) * (cardWidth + 6), -row)
 				card:SetSize(cardWidth, 33)
-				card.text:SetText(value)
+				card.text:SetText(value.text)
+				if value.xp then
+					card.icon:SetTexture("Interface\\Icons\\XP_Icon")
+				else
+					card.icon:SetTexture("Interface\\Icons\\INV_Misc_Coin_01")
+				end
 				card:Show()
 			end
-			if #values > 0 then row = row + 39 end
+			if #values > 0 then row = row + 36 end
 			AddItems(data.guaranteed)
 		end
 		local footerHeight = hasRewards and row + 8 or 0

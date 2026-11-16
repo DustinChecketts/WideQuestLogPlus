@@ -110,7 +110,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			-- Keep the Blizzard name-frame art, but scale its rendered height to
 			-- the 32px reward icon instead of the oversized 64px template art.
 			textBackground:SetSize(128, 48)
-			textBackground:SetPoint("LEFT", card, "LEFT", 29, 0)
+			-- Match the item reward name frame: its visible edge sits beside the icon.
+			textBackground:SetPoint("LEFT", card, "LEFT", 17, 0)
 			card.text = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 			card.text:SetTextColor(1, 1, 1)
 			-- Use the client's narrow UI font instead of the parchment quest font.
@@ -119,7 +120,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			card.icon = card:CreateTexture(nil, "ARTWORK")
 			card.icon:SetSize(32, 32)
 			card.icon:SetPoint("LEFT", 0, 0)
-			card.text:SetPoint("LEFT", card, "LEFT", 44, 0)
+			card.text:SetPoint("LEFT", card, "LEFT", 36, 0)
 			card.text:SetJustifyH("LEFT")
 			valueCards[i] = card
 		end

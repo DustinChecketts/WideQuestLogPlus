@@ -440,37 +440,6 @@ else
 	nativeParchment:Hide()
 end
 
--- A subtle four-sided vignette on the native parchment. Keep it in the
--- BACKGROUND layer, behind quest text and the higher-level Rewards shelf.
--- The tint is transparent toward the center, so parchment grain stays visible.
--- Do not add opaque fallback strips on clients without texture gradients.
-if CreateColor then
-	local function EdgeShade(edge, thickness)
-		local shade = detail:CreateTexture(nil, "BACKGROUND", nil, -1)
-		shade:SetTexture("Interface\\Buttons\\WHITE8x8")
-		if not shade.SetGradient then shade:Hide() return end
-		local dark = CreateColor(0.16, 0.10, 0.06, 0.24)
-		local clear = CreateColor(0.16, 0.10, 0.06, 0)
-		if edge == "LEFT" or edge == "RIGHT" then
-			shade:SetWidth(thickness)
-			shade:SetPoint("TOP" .. edge, detail, "TOP" .. edge)
-			shade:SetPoint("BOTTOM" .. edge, detail, "BOTTOM" .. edge)
-			shade:SetGradient("HORIZONTAL", edge == "LEFT" and dark or clear,
-				edge == "LEFT" and clear or dark)
-		else
-			shade:SetHeight(thickness)
-			shade:SetPoint(edge .. "LEFT", detail, edge .. "LEFT")
-			shade:SetPoint(edge .. "RIGHT", detail, edge .. "RIGHT")
-			shade:SetGradient("VERTICAL", edge == "BOTTOM" and dark or clear,
-				edge == "BOTTOM" and clear or dark)
-		end
-	end
-	EdgeShade("LEFT", 18)
-	EdgeShade("RIGHT", 18)
-	EdgeShade("TOP", 16)
-	EdgeShade("BOTTOM", 18)
-end
-
 detail.ContrastBG = detail:CreateTexture(nil, "BACKGROUND", nil, -1)
 detail.ContrastBG:SetAllPoints()
 detail.ContrastBG:Hide()
@@ -482,6 +451,41 @@ local scrollBarX = (L.DETAIL_SCROLL_SLOT_X - 4) - L.PARCHMENT_RIGHT
 detailScroll.ScrollBar:ClearAllPoints()
 detailScroll.ScrollBar:SetPoint("TOPLEFT", detailScroll, "TOPRIGHT", scrollBarX, -4)
 detailScroll.ScrollBar:SetPoint("BOTTOMLEFT", detailScroll, "BOTTOMRIGHT", scrollBarX, 4)
+
+-- One non-interactive vignette over the complete right details pane, including
+-- the fixed Rewards shelf. Unlike a parchment-only BACKGROUND texture, this
+-- sibling frame shades both surfaces continuously. Its narrow edge strips
+-- leave the content legible and do not extend into the left quest list.
+local paneVignette = CreateFrame("Frame", nil, frame)
+paneVignette:SetAllPoints(detail)
+paneVignette:SetFrameLevel(detailScroll:GetFrameLevel() + 7)
+paneVignette:EnableMouse(false)
+if CreateColor then
+	local function EdgeShade(edge, thickness)
+		local shade = paneVignette:CreateTexture(nil, "OVERLAY")
+		shade:SetTexture("Interface\\Buttons\\WHITE8x8")
+		if not shade.SetGradient then shade:Hide() return end
+		local dark = CreateColor(0.16, 0.10, 0.06, 0.24)
+		local clear = CreateColor(0.16, 0.10, 0.06, 0)
+		if edge == "LEFT" or edge == "RIGHT" then
+			shade:SetWidth(thickness)
+			shade:SetPoint("TOP" .. edge, paneVignette, "TOP" .. edge)
+			shade:SetPoint("BOTTOM" .. edge, paneVignette, "BOTTOM" .. edge)
+			shade:SetGradient("HORIZONTAL", edge == "LEFT" and dark or clear,
+				edge == "LEFT" and clear or dark)
+		else
+			shade:SetHeight(thickness)
+			shade:SetPoint(edge .. "LEFT", paneVignette, edge .. "LEFT")
+			shade:SetPoint(edge .. "RIGHT", paneVignette, edge .. "RIGHT")
+			shade:SetGradient("VERTICAL", edge == "BOTTOM" and dark or clear,
+				edge == "BOTTOM" and clear or dark)
+		end
+	end
+	EdgeShade("LEFT", 18)
+	EdgeShade("RIGHT", 18)
+	EdgeShade("TOP", 16)
+	EdgeShade("BOTTOM", 18)
+end
 
 local RenderDetails = ns.CreateForeverDetails(detail, detailScroll, L)
 local function DisplayDetails(resetScroll)

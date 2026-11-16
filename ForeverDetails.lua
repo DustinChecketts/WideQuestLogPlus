@@ -8,25 +8,6 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local child = CreateFrame("Frame", nil, scroll)
 	child:SetSize(L.PARCHMENT_RIGHT - L.PARCHMENT_LEFT, 300)
 	scroll:SetScrollChild(child)
-	-- Fade the scrolling description into the fixed Rewards shelf instead of
-	-- exposing the scroll viewport's hard clipping edge. This overlay belongs
-	-- to the scroll viewport (not its moving child) and stays behind the shelf.
-	-- The native parchment is warm at its lower edge; a short translucent
-	-- parchment-colored gradient avoids a hard horizontal cutoff.
-	local textFade = CreateFrame("Frame", nil, parent)
-	textFade:SetFrameLevel(scroll:GetFrameLevel() + 1)
-	textFade:SetHeight(28)
-	textFade:SetPoint("BOTTOMLEFT", scroll, "BOTTOMLEFT", 0, 0)
-	textFade:SetPoint("BOTTOMRIGHT", scroll, "BOTTOMRIGHT", 0, 0)
-	local fadeTexture = textFade:CreateTexture(nil, "OVERLAY")
-	fadeTexture:SetAllPoints()
-	fadeTexture:SetTexture("Interface\\Buttons\\WHITE8x8")
-	if fadeTexture.SetGradient and CreateColor then
-		fadeTexture:SetGradient("VERTICAL", CreateColor(0.72, 0.51, 0.29, 0.92), CreateColor(0.72, 0.51, 0.29, 0))
-	else
-		-- No opaque fallback: unsupported clients retain the existing layout.
-		textFade:Hide()
-	end
 	local width = L.CONTENT_WIDTH
 	local x = L.CONTENT_LEFT - L.PARCHMENT_LEFT
 	local yStart = L.CONTENT_TOP - L.PANE_TOP
@@ -414,7 +395,6 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			rewards = #rewardData.guaranteed, money = coins, xp = experience,
 		}
 		local fixed, footerHeight = UpdateRewardShelf(questID, rewardData, height)
-		textFade:SetShown(fixed and footerHeight > 0 and fadeTexture.SetGradient ~= nil and CreateColor ~= nil)
 		id:SetText(ns.QuestIDText(questID))
 		id:SetShown(ns.GetOption("showQuestID"))
 		child:SetHeight(math.max(height + (not fixed and footerHeight > 0 and footerHeight + 28 or 22), scroll:GetHeight()))

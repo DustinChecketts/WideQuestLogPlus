@@ -162,22 +162,22 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		for _, card in ipairs(valueCards) do card:Hide() end
 		local hasRewards = #data.choices > 0 or #data.guaranteed > 0 or data.money > 0 or data.xp > 0
 		footer:SetShown(hasRewards)
-		local row, buttonIndex, labelIndex, valueIndex = 61, 0, 0, 0
+		local row, buttonIndex, labelIndex, valueIndex = 57, 0, 0, 0
 		-- Native reward icons are 32px; keep only a small gap between rows.
 		local rewardRowHeight = 34
 		local available = math.max(190, parent:GetWidth() - 24)
 		local cardWidth = math.floor((available - 8) / 2)
 		local function AddLabel(value)
-			-- Native labels sit close to the preceding and following reward rows.
-			-- Keep a small symmetric gutter instead of accumulating extra gaps.
-			if labelIndex > 0 then row = row + 2 end
+			-- Native-style paragraph labels: compact line height and no extra
+			-- trailing gap; consecutive reward rows retain their own 34px pitch.
+			if labelIndex > 0 then row = row + 1 end
 			labelIndex = labelIndex + 1
 			local label = RewardLabel(labelIndex)
 			label:ClearAllPoints()
 			label:SetPoint("TOPLEFT", footer, "TOPLEFT", 12, -row)
 			label:SetText(value)
 			label:Show()
-			row = row + math.max(14, label:GetStringHeight()) + 2
+			row = row + math.max(14, label:GetStringHeight())
 		end
 		local function AddItems(items)
 			for i, reward in ipairs(items) do

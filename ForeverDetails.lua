@@ -107,8 +107,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			local textBackground = card:CreateTexture(nil, "BACKGROUND")
 			-- Reuse the native quest item name background, not a flat color block.
 			textBackground:SetTexture("Interface\\QuestFrame\\UI-QuestItemNameFrame")
-			textBackground:SetPoint("TOPLEFT", card, "TOPLEFT", 39, 0)
-			textBackground:SetPoint("BOTTOMRIGHT", card, "BOTTOMRIGHT", 0, 0)
+			textBackground:SetSize(128, 64)
+			textBackground:SetPoint("LEFT", card, "LEFT", 29, 0)
 			card.text = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 			card.text:SetTextColor(1, 1, 1)
 			-- Use the client's narrow UI font instead of the parchment quest font.
@@ -117,7 +117,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			card.icon = card:CreateTexture(nil, "ARTWORK")
 			card.icon:SetSize(34, 34)
 			card.icon:SetPoint("LEFT", 0, 0)
-			card.text:SetPoint("LEFT", card.icon, "RIGHT", 8, 0)
+			card.text:SetPoint("LEFT", card, "LEFT", 44, 0)
 			card.text:SetJustifyH("LEFT")
 			valueCards[i] = card
 		end
@@ -159,6 +159,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		local hasRewards = #data.choices > 0 or #data.guaranteed > 0 or data.money > 0 or data.xp > 0
 		footer:SetShown(hasRewards)
 		local row, buttonIndex, labelIndex, valueIndex = 61, 0, 0, 0
+		local rewardRowHeight = 37
 		local available = math.max(190, parent:GetWidth() - 24)
 		local cardWidth = math.floor((available - 8) / 2)
 		local function AddLabel(value)
@@ -168,7 +169,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			label:SetPoint("TOPLEFT", footer, "TOPLEFT", 12, -row)
 			label:SetText(value)
 			label:Show()
-			row = row + math.max(19, label:GetStringHeight() + 6)
+			row = row + math.max(16, label:GetStringHeight() + 3)
 		end
 		local function AddItems(items)
 			for i, reward in ipairs(items) do
@@ -178,11 +179,11 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				button:ClearAllPoints()
 				local column = (i - 1) % 2
 				button:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + column * (cardWidth + 6), -row)
-				button:SetSize(cardWidth, 41)
-			-- Extend Blizzard's name-frame texture and its text to our column width.
-			if button.NameFrame then button.NameFrame:SetSize(cardWidth - 39, 34) end
-			button.Icon:SetSize(32, 32)
-			button.Name:SetWidth(cardWidth - 58)
+				button:SetSize(cardWidth, rewardRowHeight)
+				-- Native LargeItemButtonTemplate uses 128x64 name art.
+				if button.NameFrame then button.NameFrame:SetSize(128, 64) end
+				button.Icon:SetSize(32, 32)
+				button.Name:SetWidth(math.min(90, cardWidth - 58))
 				button.Icon:SetTexture(reward.texture)
 				button.Name:SetText(reward.name or "")
 				button.Name:SetTextColor(1, 1, 1)
@@ -202,7 +203,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			if nameFont and nameSize > 11 then button.Name:SetFont(nameFont, 11, nameFlags) end
 				button.Count:SetText((reward.count or 1) > 1 and reward.count or "")
 				button:Show()
-				if column == 1 or i == #items then row = row + 41 end
+				if column == 1 or i == #items then row = row + rewardRowHeight end
 			end
 		end
 		if #data.choices > 0 then
@@ -237,7 +238,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				end
 				card:Show()
 			end
-			if #values > 0 then row = row + 41 end
+			if #values > 0 then row = row + rewardRowHeight end
 			AddItems(data.guaranteed)
 		end
 		local footerHeight = hasRewards and row + 8 or 0
@@ -271,12 +272,12 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local function Place(region, gap)
 		region:ClearAllPoints()
 		if last then
-			region:SetPoint("TOPLEFT", last, "BOTTOMLEFT", 0, -(gap or 0))
 			height = height + (gap or 0)
 		else
-			region:SetPoint("TOPLEFT", child, "TOPLEFT", x, -yStart)
 			height = yStart
 		end
+		-- Fixed parchment margin: title icon indentation must not propagate.
+		region:SetPoint("TOPLEFT", child, "TOPLEFT", x, -height)
 		region:Show()
 		height = height + region:GetHeight()
 		last = region
@@ -320,6 +321,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		if not questID then id:Hide() return end
 		C_QuestLog.SetSelectedQuest(questID)
 		local descriptionValue, objectivesValue = GetQuestLogQuestText()
+		title:SetWidth(width)
 		title:SetText(C_QuestLog.GetTitleForQuestID(questID) or "")
 		Place(title)
 		local tagInfo = C_QuestLog.GetQuestTagInfo and C_QuestLog.GetQuestTagInfo(questID)
@@ -333,6 +335,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			title:ClearAllPoints()
 			title:SetPoint("TOPLEFT", child, "TOPLEFT", x + 24, -yStart)
 			title:SetWidth(width - 24)
+			height = yStart + title:GetHeight()
 		else
 			title:SetWidth(width)
 		end

@@ -328,8 +328,9 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		if tagAtlas then
 			titleTag:SetAtlas(tagAtlas)
 			titleTag:ClearAllPoints()
-			titleTag:SetPoint("LEFT", title, "LEFT", 0, 0)
+			titleTag:SetPoint("TOPLEFT", child, "TOPLEFT", x, -yStart - 2)
 			titleTag:Show()
+			title:ClearAllPoints()
 			title:SetPoint("TOPLEFT", child, "TOPLEFT", x + 24, -yStart)
 			title:SetWidth(width - 24)
 		else

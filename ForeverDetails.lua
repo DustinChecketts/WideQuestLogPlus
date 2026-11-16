@@ -187,7 +187,9 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				-- Use native name art, with a shorter displayed height to match the map rewards.
 				if button.NameFrame then button.NameFrame:SetSize(128, 48) end
 				button.Icon:SetSize(32, 32)
-				button.Name:SetWidth(math.min(90, cardWidth - 58))
+				-- Use the available native name-frame space; the old 90px cap forced
+				-- extra wrapping even when the reward button had room for two lines.
+				button.Name:SetWidth(math.max(1, cardWidth - 43))
 				button.Icon:SetTexture(reward.texture)
 				button.Name:SetText(reward.name or "")
 				button.Name:SetTextColor(1, 1, 1)

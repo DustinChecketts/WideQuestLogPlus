@@ -111,7 +111,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			-- the 32px reward icon instead of the oversized 64px template art.
 			textBackground:SetSize(128, 48)
 			-- Match the item reward name frame: its visible edge sits beside the icon.
-			textBackground:SetPoint("LEFT", card, "LEFT", 17, 0)
+			textBackground:SetPoint("LEFT", card, "LEFT", 21, 0)
 			card.text = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 			card.text:SetTextColor(1, 1, 1)
 			-- Use the client's narrow UI font instead of the parchment quest font.

@@ -2,7 +2,7 @@ local ADDON_NAME, ns = ...
 
 -- Shared, account-wide presentation preferences. The settings page is registered after
 -- SavedVariables load; the active client renderer supplies its own refresh callback.
-local defaults = { showQuestLevel = true, showQuestID = true }
+local defaults = { showQuestLevel = true, showQuestID = true, alwaysShowFullRewards = true }
 
 function ns.GetOption(key)
 	local value = ns.GetDB()[key]
@@ -48,7 +48,8 @@ local function AddCheckbox(label, key, anchor, offset)
 end
 
 local levelCheck = AddCheckbox("Show Quest Level", "showQuestLevel", description, -16)
-AddCheckbox("Show Quest ID", "showQuestID", levelCheck, -10)
+local idCheck = AddCheckbox("Show Quest ID", "showQuestID", levelCheck, -10)
+AddCheckbox("Always Show Full Rewards", "alwaysShowFullRewards", idCheck, -10)
 
 local loader = CreateFrame("Frame")
 loader:RegisterEvent("ADDON_LOADED")

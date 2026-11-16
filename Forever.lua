@@ -467,8 +467,8 @@ if CreateColor then
 		local shade = paneVignette:CreateTexture(nil, "OVERLAY")
 		shade:SetTexture("Interface\\Buttons\\WHITE8x8")
 		if not shade.SetGradient then shade:Hide() return end
-		local dark = CreateColor(0.16, 0.10, 0.06, 0.24)
-		local clear = CreateColor(0.16, 0.10, 0.06, 0)
+		local dark = CreateColor(0.12, 0.075, 0.045, 0.42)
+		local clear = CreateColor(0.12, 0.075, 0.045, 0)
 		if edge == "LEFT" or edge == "RIGHT" then
 			shade:SetWidth(thickness)
 			shade:SetPoint("TOP" .. edge, paneVignette, "TOP" .. edge)

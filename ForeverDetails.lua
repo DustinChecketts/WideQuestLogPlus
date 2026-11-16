@@ -23,6 +23,9 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		return t
 	end
 	local title = Text("QuestTitleFont")
+	local titleTag = child:CreateTexture(nil, "ARTWORK")
+	titleTag:SetSize(18, 18)
+	titleTag:Hide()
 	local summary = Text("QuestFont")
 	local descriptionHeader = Text("QuestTitleFont", QUEST_DESCRIPTION)
 	local description = Text("QuestFont")
@@ -175,11 +178,11 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				button:ClearAllPoints()
 				local column = (i - 1) % 2
 				button:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + column * (cardWidth + 6), -row)
-				button:SetWidth(cardWidth)
-			button:SetHeight(41)
-			-- Match the icon-sized name background without distorting the native icon.
-			if button.NameFrame then button.NameFrame:SetHeight(32) end
+				button:SetSize(cardWidth, 41)
+			-- Extend Blizzard's name-frame texture and its text to our column width.
+			if button.NameFrame then button.NameFrame:SetSize(cardWidth - 39, 34) end
 			button.Icon:SetSize(32, 32)
+			button.Name:SetWidth(cardWidth - 58)
 				button.Icon:SetTexture(reward.texture)
 				button.Name:SetText(reward.name or "")
 				button.Name:SetTextColor(1, 1, 1)
@@ -224,6 +227,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				card:ClearAllPoints()
 				card:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + (i - 1) * (cardWidth + 6), -row)
 				card:SetSize(cardWidth, 34)
+				card.text:SetWidth(cardWidth - 58)
 				card.text:SetText(value.text)
 				card.text:SetTextColor(1, 1, 1)
 				if value.xp then
@@ -237,14 +241,16 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			AddItems(data.guaranteed)
 		end
 		local footerHeight = hasRewards and row + 8 or 0
-		footer:SetHeight(footerHeight)
+		-- Extend the native rewards art through the parchment's lower inset.
+		local lowerInset = hasRewards and 16 or 0
+		footer:SetHeight(footerHeight + lowerInset)
 		local fixed = ns.GetOption("alwaysShowFullRewards")
 		if fixed then
 			if footer:GetParent() ~= parent then footer:SetParent(parent) end
 			footer:SetFrameLevel(scroll:GetFrameLevel() + 5)
 			footer:ClearAllPoints()
-			footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 0, 0)
-			footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, 0)
+			footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 0, -lowerInset)
+			footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, -lowerInset)
 		else
 			-- Native-style flow: the same reward controls follow the quest text
 			-- inside the scroll child rather than occupying a separate viewport.
@@ -280,6 +286,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		UpdateRewardShelf(nil, {choices = {}, guaranteed = {}, money = 0, xp = 0})
 		for _, region in ipairs(placed) do region:Hide() end
 		for _, region in ipairs(regions) do region:Hide() end
+		titleTag:Hide()
 		id:Hide()
 		for _, obj in ipairs(objectives) do
 			obj.line:Hide()
@@ -315,9 +322,22 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		local descriptionValue, objectivesValue = GetQuestLogQuestText()
 		title:SetText(C_QuestLog.GetTitleForQuestID(questID) or "")
 		Place(title)
+		local tagInfo = C_QuestLog.GetQuestTagInfo and C_QuestLog.GetQuestTagInfo(questID)
+		local tagAtlas = tagInfo and type(QuestUtils_GetQuestTagAtlas) == "function"
+			and QuestUtils_GetQuestTagAtlas(tagInfo.tagID)
+		if tagAtlas then
+			titleTag:SetAtlas(tagAtlas)
+			titleTag:ClearAllPoints()
+			titleTag:SetPoint("LEFT", title, "LEFT", 0, 0)
+			titleTag:Show()
+			title:SetPoint("TOPLEFT", child, "TOPLEFT", x + 24, -yStart)
+			title:SetWidth(width - 24)
+		else
+			title:SetWidth(width)
+		end
 		if objectivesValue and objectivesValue ~= "" then
 			summary:SetText(objectivesValue)
-			Place(summary, 4)
+			Place(summary, 8)
 		end
 		local objectiveIndex = 0
 		local waypoint = C_QuestLog.GetNextWaypointText and C_QuestLog.GetNextWaypointText(questID)

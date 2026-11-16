@@ -114,8 +114,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			textBackground:SetPoint("LEFT", card, "LEFT", 21, 0)
 			card.text = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 			card.text:SetTextColor(1, 1, 1)
-			-- Keep Blizzard's default reward-value font; forcing Arial Narrow
-			-- made coin amounts differ from the native quest-details panel.
+			-- Cache the native font so reused cards can switch between XP and coins.
+			card.defaultFont, card.defaultSize, card.defaultFlags = card.text:GetFont()
 			card.icon = card:CreateTexture(nil, "ARTWORK")
 			card.icon:SetSize(32, 32)
 			card.icon:SetPoint("LEFT", 0, 0)
@@ -248,6 +248,13 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				card.background:ClearAllPoints()
 				card.background:SetPoint("LEFT", card, "LEFT", value.xp and 22 or 21, 0)
 				card.text:SetWidth(cardWidth - 58)
+				-- Blizzard uses a narrow numeric face for XP, but the default
+				-- reward font for money. Restore it when the card is reused.
+				if card.defaultFont then
+					card.text:SetFont(value.xp and "Fonts\\ARIALN.TTF" or card.defaultFont,
+						value.xp and math.max(card.defaultSize or 14, 14) or card.defaultSize,
+						card.defaultFlags)
+				end
 				card.text:SetText(value.text)
 				card.text:SetTextColor(1, 1, 1)
 				if value.xp then

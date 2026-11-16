@@ -114,9 +114,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			textBackground:SetPoint("LEFT", card, "LEFT", 21, 0)
 			card.text = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 			card.text:SetTextColor(1, 1, 1)
-			-- Use the client's narrow UI font instead of the parchment quest font.
-			local fontPath, fontSize, fontFlags = card.text:GetFont()
-			if fontPath then card.text:SetFont("Fonts\\ARIALN.TTF", math.max(fontSize, 14), fontFlags) end
+			-- Keep Blizzard's default reward-value font; forcing Arial Narrow
+			-- made coin amounts differ from the native quest-details panel.
 			card.icon = card:CreateTexture(nil, "ARTWORK")
 			card.icon:SetSize(32, 32)
 			card.icon:SetPoint("LEFT", 0, 0)
@@ -359,11 +358,11 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			titleTag:SetAtlas(tagAtlas)
 			titleTag:ClearAllPoints()
 			-- Align the tag icon to the rendered title line, not a fixed top offset.
-			titleTag:SetPoint("LEFT", title, "LEFT", -24, 0)
+			titleTag:SetPoint("LEFT", title, "LEFT", -21, 0)
 			titleTag:Show()
 			title:ClearAllPoints()
-			title:SetPoint("TOPLEFT", child, "TOPLEFT", x + 24, -yStart)
-			title:SetWidth(width - 24)
+			title:SetPoint("TOPLEFT", child, "TOPLEFT", x + 21, -yStart)
+			title:SetWidth(width - 21)
 			height = yStart + title:GetHeight()
 		else
 			title:SetWidth(width)

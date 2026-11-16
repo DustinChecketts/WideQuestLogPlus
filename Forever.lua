@@ -461,7 +461,6 @@ paneVignette:SetAllPoints(detail)
 paneVignette:SetFrameLevel(detailScroll:GetFrameLevel() + 7)
 paneVignette:EnableMouse(false)
 local vignetteEdges = {}
-local vignetteDiagnostic = false
 if CreateColor then
 	local function EdgeShade(edge, thickness)
 		local shade = paneVignette:CreateTexture(nil, "OVERLAY")
@@ -487,38 +486,20 @@ if CreateColor then
 end
 
 local function RefreshVignette()
-	local colors = {LEFT = {1, 0, 0}, RIGHT = {0, 1, 0}, TOP = {0, 0.4, 1}, BOTTOM = {1, 0, 1}}
 	for _, entry in ipairs(vignetteEdges) do
-		local shade, edge = entry.texture, entry.edge
-		if vignetteDiagnostic then
-			local c = colors[edge]
-			shade:SetColorTexture(c[1], c[2], c[3], 0.6)
-		else
-			shade:SetTexture("Interface\\Buttons\\WHITE8x8")
-			shade:SetGradient((edge == "LEFT" or edge == "RIGHT") and "HORIZONTAL" or "VERTICAL",
-				(edge == "LEFT" or edge == "BOTTOM") and entry.dark or entry.clear,
-				(edge == "LEFT" or edge == "BOTTOM") and entry.clear or entry.dark)
-		end
+		local edge = entry.edge
+		entry.texture:SetGradient((edge == "LEFT" or edge == "RIGHT") and "HORIZONTAL" or "VERTICAL",
+			(edge == "LEFT" or edge == "BOTTOM") and entry.dark or entry.clear,
+			(edge == "LEFT" or edge == "BOTTOM") and entry.clear or entry.dark)
 	end
 end
 RefreshVignette()
 
 SLASH_WQLP_VIGNETTE1 = "/wqlpvignette"
 SlashCmdList.WQLP_VIGNETTE = function()
-	vignetteDiagnostic = not vignetteDiagnostic
-	-- Diagnostic only: force the overlay above all quest-detail artwork to
-	-- distinguish strata occlusion from texture/anchor problems.
-	if vignetteDiagnostic then
-		paneVignette:SetFrameStrata("TOOLTIP")
-	else
-		paneVignette:SetFrameStrata(frame:GetFrameStrata())
-		paneVignette:SetFrameLevel(detailScroll:GetFrameLevel() + 7)
-	end
-	RefreshVignette()
-	print("WQLP vignette diagnostic: " .. (vignetteDiagnostic and "ON (red=left, green=right, blue=top, magenta=bottom)" or "OFF (normal shading)"))
-	print(string.format("WQLP vignette: pane %.0fx%.0f, overlay %.0fx%.0f, edges=%d, visible=%s",
-		detail:GetWidth(), detail:GetHeight(), paneVignette:GetWidth(), paneVignette:GetHeight(),
-		#vignetteEdges, tostring(paneVignette:IsShown())))
+	local enabled = not paneVignette:IsShown()
+	paneVignette:SetShown(enabled)
+	print("WQLP custom vignette: " .. (enabled and "ON" or "OFF") .. " (native parchment shading remains)")
 end
 
 local RenderDetails = ns.CreateForeverDetails(detail, detailScroll, L)

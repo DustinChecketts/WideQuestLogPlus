@@ -129,9 +129,9 @@ local function WideQuestLogPlus()
 				if (not isHeader) then
 					local questTextFormatted
 					if isVoiceOverLoaded then -- Adjustment for play button overlap
-						questTextFormatted = format("	   [%d] %s", level, title)
+						questTextFormatted = ns.GetOption("showQuestLevel") and format("	   [%d] %s", level, title) or title
 					else -- Default spacing
-						questTextFormatted = format("[%d] %s", level, title)
+						questTextFormatted = ns.GetOption("showQuestLevel") and format("[%d] %s", level, title) or title
 					end
 					questLogTitle:SetText(questTextFormatted)
 					questCheck:SetPoint("LEFT", questLogTitle, "LEFT", questLogTitle.Text:GetStringWidth() + 18, 0)
@@ -154,7 +154,9 @@ local function WideQuestLogPlus()
 			return
 		end
 
-		title = format("%s [%d]", title, id)
+		if ns.GetOption("showQuestID") then
+			title = format("%s [%d]", title, id)
+		end
 		if (IsCurrentQuestFailed()) then
 			title = format("%s - (%s)", title, _G.FAILED)
 		end
@@ -163,6 +165,11 @@ local function WideQuestLogPlus()
 
 	hooksecurefunc("QuestLog_UpdateQuestDetails", AddQuestID)
 	hooksecurefunc("QuestFrameItems_Update", AddQuestID)
+
+	ns.RegisterOptionsRefresh(function()
+		if QuestLog_Update then QuestLog_Update() end
+		if QuestLog_UpdateQuestDetails then QuestLog_UpdateQuestDetails() end
+	end)
 
 	-- Handle background textures
 	local regions = {QuestLogFrame:GetRegions()}

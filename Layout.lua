@@ -61,6 +61,9 @@ L.REWARDS_GAP = 10
 -- Blizzard's money frames keep their last coin this far inside their right edge, so a money frame
 -- right-aligned to the text column sits this much further right
 L.MONEY_RIGHT_PADDING = 13
+L.OBJECTIVE_INDENT = 22 -- Blizzard leaderboard indent, removed only in Forever detail pane
+L.OBJECTIVE_COUNT_WIDTH = 258 -- Count column inset from the parchment right edge
+L.REWARD_VALUE_X = 176 -- Same left edge for money and XP values
 
 -- The quest ID sits under everything else in the quest details, right-aligned to the text column, two
 -- blank lines down, in the description's font a little smaller
@@ -68,10 +71,10 @@ L.QUEST_ID_GAP = 10
 L.QUEST_ID_FONT_SHRINK = 2
 
 -- Quest list rows: zone headers have their +/- at the left and their name after it; quest titles sit
--- further in, after a slot for the tracking check that's there whether the quest is tracked or not
+-- aligned with header text; tracking check occupies the left icon gutter
 L.HEADER_TEXT_X = 20
-L.CHECK_X = 18
-L.QUEST_TEXT_X = L.CHECK_X + 16
+L.CHECK_X = 2
+L.QUEST_TEXT_X = L.HEADER_TEXT_X
 
 -- Blank space above every zone header in the quest list except the first
 L.HEADER_GAP = 0

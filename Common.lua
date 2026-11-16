@@ -32,6 +32,9 @@ end
 
 -- "[13] Quest Name", or "[13D] Quest Name" for a dungeon quest, and so on
 function ns.LevelTitle(level, title, suffix)
+	if ns.GetOption and not ns.GetOption("showQuestLevel") then
+		return title or ""
+	end
 	return format("[%d%s] %s", level or 0, suffix or "", title or "")
 end
 
@@ -98,7 +101,7 @@ end
 function ns.StyleObjective(line, text, finished, width, fontSource)
 	local name, countText = SplitObjective(text or "")
 	MatchFont(line, fontSource)
-	line:SetText("  " .. (finished and CHECK or NO_CHECK) .. " " .. name)
+	line:SetText((finished and CHECK or NO_CHECK) .. " " .. name)
 
 	local count = objectiveCounts[line]
 	if (not count) then

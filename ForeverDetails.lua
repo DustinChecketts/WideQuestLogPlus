@@ -139,14 +139,14 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				if info then reward = {kind = "currency", type = "choice", index = currencyIndex, name = info.name, texture = info.texture, count = info.totalRewardAmount} end
 			else
 				itemIndex = itemIndex + 1
-				local name, texture, count, quality = GetQuestLogChoiceInfo(i)
-				reward = {kind = "item", type = "choice", index = itemIndex, name = name, texture = texture, count = count, quality = quality}
+				local name, texture, count, quality, isUsable = GetQuestLogChoiceInfo(i)
+				reward = {kind = "item", type = "choice", index = itemIndex, name = name, texture = texture, count = count, quality = quality, isUsable = isUsable}
 			end
 			if reward then data.choices[#data.choices + 1] = reward end
 		end
 		for i = 1, GetNumQuestLogRewards() or 0 do
-			local name, texture, count, quality = GetQuestLogRewardInfo(i)
-			data.guaranteed[#data.guaranteed + 1] = {kind = "item", type = "reward", index = i, name = name, texture = texture, count = count, quality = quality}
+			local name, texture, count, quality, isUsable = GetQuestLogRewardInfo(i)
+			data.guaranteed[#data.guaranteed + 1] = {kind = "item", type = "reward", index = i, name = name, texture = texture, count = count, quality = quality, isUsable = isUsable}
 		end
 		if C_QuestInfoSystem and C_QuestInfoSystem.GetQuestRewardCurrencies then
 			for i, info in ipairs(C_QuestInfoSystem.GetQuestRewardCurrencies(questID) or {}) do
@@ -194,6 +194,15 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				-- extra wrapping even when the reward button had room for two lines.
 				button.Name:SetWidth(math.max(1, cardWidth - 43))
 				button.Icon:SetTexture(reward.texture)
+				-- Match Blizzard QuestInfo_ShowRewardAsItemCommon: the quest
+				-- reward API supplies usability directly (including untrained skills).
+				-- Currency rewards and unknown usability retain normal colors.
+				local unusable = reward.kind == "item" and reward.isUsable == false
+				local tint = unusable and 0.9 or 1
+				button.Icon:SetVertexColor(tint, unusable and 0 or 1, unusable and 0 or 1)
+				if button.NameFrame then
+					button.NameFrame:SetVertexColor(tint, unusable and 0 or 1, unusable and 0 or 1)
+				end
 				button.Name:SetText(reward.name or "")
 				button.Name:SetTextColor(1, 1, 1)
 			-- LargeQuestRewardItemButtonTemplate supplies the square WhiteIconFrame.

@@ -123,7 +123,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		end
 		return data
 	end
-	local function UpdateRewardShelf(questID, data)
+	local function UpdateRewardShelf(questID, data, contentHeight)
 		for _, button in ipairs(rewardButtons) do button:Hide() button.reward = nil end
 		for _, label in ipairs(rewardLabels) do label:Hide() end
 		for _, card in ipairs(valueCards) do card:Hide() end
@@ -206,7 +206,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			if footer:GetParent() ~= child then footer:SetParent(child) end
 			footer:SetFrameLevel(child:GetFrameLevel() + 1)
 			footer:ClearAllPoints()
-			footer:SetPoint("TOPLEFT", child, "TOPLEFT", 4, -(height + 18))
+			footer:SetPoint("TOPLEFT", child, "TOPLEFT", 4, -((contentHeight or 0) + 18))
 			footer:SetPoint("TOPRIGHT", child, "TOPRIGHT", -4, -(height + 18))
 		end
 		scroll:ClearAllPoints()
@@ -303,7 +303,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			questID = questID, allowed = allowed, choices = #rewardData.choices,
 			rewards = #rewardData.guaranteed, money = coins, xp = experience,
 		}
-		local fixed, footerHeight = UpdateRewardShelf(questID, rewardData)
+		local fixed, footerHeight = UpdateRewardShelf(questID, rewardData, height)
 		id:SetText(ns.QuestIDText(questID))
 		id:SetShown(ns.GetOption("showQuestID"))
 		child:SetHeight(math.max(height + (not fixed and footerHeight > 0 and footerHeight + 28 or 22), scroll:GetHeight()))

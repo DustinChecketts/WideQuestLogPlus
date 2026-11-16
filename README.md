@@ -8,19 +8,28 @@ Wide Quest Log Plus keeps Blizzard's original quest log interface on Classic Era
 - A dual-pane quest log: native Blizzard window widened on Era/TBC, Classic-style recreation on Forever
 - Resizable height by dragging the grip in the bottom-right corner (`/wqlp reset` restores default)
 - Full quest list in the left-pane with quest details relocated to the right pane
-- Custom textures added to maintain the look and feel of the original interface
+- Blizzard's native parchment and reward artwork used in the Forever quest-details pane
 - Quest levels added to the quest titles in the quest list (left-pane)
 - Quest ids added to the quest title in the quest details (right-pane)
 - Ability to shift+click link quests in chat
 - Ability to shift+click quests to enable quest tracking
-- Added Compatability with VoiceOver addon in version 1.0.12+
+- Compatibility with VoiceOver addon added in version 1.0.12+
+- In-game options for quest levels, quest IDs, and always showing the full Rewards section on Forever
+
+<h4>Version 1.2.1 — Forever quest log refinements</h4>
+
+- Improved Forever quest-details presentation with Blizzard's native parchment and Rewards artwork.
+- Refined text scrolling, reward spacing, quest title icons, and item/XP/money presentation.
+- Unusable reward icons now use Blizzard's red usability tint.
+- Added a shared in-game options panel for quest levels, quest IDs, and full Rewards display.
+- Classic Era and Anniversary continue using Blizzard's native quest log implementation.
 
 <h4>Version 1.2.0 — WoW Forever support</h4>
 
 - Initial Forever support with a Classic-style quest list and parchment details.
 - Quest levels, quest IDs, objectives, rewards, tooltips, and vertical resizing.
 - Keyboard quest-log toggle and native Classic implementations retained for Era/TBC.
-- Options panel, alternate Forever-themed art, and further StormCore migration are planned, not included in this release.
+- The shared options panel was added in 1.2.1; it was not part of the initial 1.2.0 release.
 - WoW Forever and Classic Anniversary TBC were tested before the 1.2.0 release; please report client-specific issues on GitHub.
 
 <h4>Acknowledgements</h4>
@@ -35,8 +44,7 @@ Wide Quest Log Plus keeps Blizzard's original quest log interface on Classic Era
 
 <h4>Planned improvements</h4>
 
-- Add a unified in-game options panel.
-- Refine Forever-specific bronze accents and higher-resolution artwork.
+- Continue refining Forever visual parity where native artwork and APIs permit.
 - Continue architecture and maintainability improvements under StormCore standards.
 
 Updated, uploaded, and maintained (at least for now) by [StormtrooperTK421](https://discordapp.com/users/237746068844969994) on [GitHub](https://github.com/DustinChecketts/WideQuestLogPlus). Please submit issues and I'll do my best to troubleshoot, replicate, and resolve issues as my limited abilities allow.

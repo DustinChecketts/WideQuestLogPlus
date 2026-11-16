@@ -282,7 +282,13 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		-- the viewport overlaps the quest-log action buttons at some UI scales.
 		local lowerInset = 0
 		footer:SetHeight(footerHeight)
-		local fixed = ns.GetOption("alwaysShowFullRewards")
+		-- Even with pinning disabled, short quests should keep the Rewards shelf
+		-- at the bottom rather than leaving unused parchment beneath it.
+		-- Only use flowing rewards when the full text + shelf exceeds the pane.
+		local availableHeight = math.max(parent:GetHeight() - 2, 0)
+		local fitsWithoutScrolling = hasRewards
+			and (contentHeight or 0) + 18 + footerHeight <= availableHeight
+		local fixed = ns.GetOption("alwaysShowFullRewards") or fitsWithoutScrolling
 		if fixed then
 			if footer:GetParent() ~= parent then footer:SetParent(parent) end
 			footer:SetFrameLevel(scroll:GetFrameLevel() + 5)
@@ -419,7 +425,10 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		local fixed, footerHeight = UpdateRewardShelf(questID, rewardData, height)
 		id:SetText(ns.QuestIDText(questID))
 		id:SetShown(ns.GetOption("showQuestID"))
-		child:SetHeight(math.max(height + (not fixed and footerHeight > 0 and footerHeight + 28 or 22), scroll:GetHeight()))
+		-- In flowing mode the shelf starts 18px after the text and ends
+		-- exactly at that offset plus its own height. Do not add bottom
+		-- padding: it would expose an empty parchment strip at max scroll.
+		child:SetHeight(math.max(height + (not fixed and footerHeight > 0 and footerHeight + 18 or 22), scroll:GetHeight()))
 		scroll:UpdateScrollChildRect()
 		-- Always start at the title when selecting a quest.\n\t\tscroll:SetVerticalScroll(0)
 	end

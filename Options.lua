@@ -49,7 +49,10 @@ end
 
 local levelCheck = AddCheckbox("Show Quest Level", "showQuestLevel", description, -16)
 local idCheck = AddCheckbox("Show Quest ID", "showQuestID", levelCheck, -10)
-AddCheckbox("Always Show Full Rewards", "alwaysShowFullRewards", idCheck, -10)
+-- Only the Forever renderer provides a separately configurable Rewards shelf.
+if ns.Compat and ns.Compat.isForever then
+	AddCheckbox("Pin Rewards to Bottom", "alwaysShowFullRewards", idCheck, -10)
+end
 
 local loader = CreateFrame("Frame")
 loader:RegisterEvent("ADDON_LOADED")

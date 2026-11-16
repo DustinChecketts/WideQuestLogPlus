@@ -429,6 +429,17 @@ local detail = CreateFrame("Frame", nil, frame)
 detail:SetPoint("TOPLEFT", L.PARCHMENT_LEFT, -(PANE_TOP - 2))
 detail:SetWidth(L.PARCHMENT_RIGHT - L.PARCHMENT_LEFT)
 
+-- Forever's native quest details use this atlas (confirmed by /wqlpart).
+-- Replace only the parchment surface, not the classic window frame or the
+-- native Rewards shelf. Retain the bundled art underneath as a fallback.
+local nativeParchment = detail:CreateTexture(nil, "BACKGROUND", nil, -2)
+nativeParchment:SetAllPoints(detail)
+if C_Texture and C_Texture.GetAtlasInfo and C_Texture.GetAtlasInfo("QuestDetailsBackgrounds") then
+	nativeParchment:SetAtlas("QuestDetailsBackgrounds")
+else
+	nativeParchment:Hide()
+end
+
 detail.ContrastBG = detail:CreateTexture(nil, "BACKGROUND", nil, -1)
 detail.ContrastBG:SetAllPoints()
 detail.ContrastBG:Hide()

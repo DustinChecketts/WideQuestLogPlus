@@ -207,7 +207,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			footer:SetFrameLevel(child:GetFrameLevel() + 1)
 			footer:ClearAllPoints()
 			footer:SetPoint("TOPLEFT", child, "TOPLEFT", 4, -((contentHeight or 0) + 18))
-			footer:SetPoint("TOPRIGHT", child, "TOPRIGHT", -4, -(height + 18))
+			footer:SetPoint("TOPRIGHT", child, "TOPRIGHT", -4, -((contentHeight or 0) + 18))
 		end
 		scroll:ClearAllPoints()
 		scroll:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, -2)

@@ -31,22 +31,36 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	id:SetWidth(80)
 	id:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -18, -6)
 	id:SetDrawLayer("OVERLAY", 7)
+	-- Quest IDs are metadata, not part of the quest title hierarchy.
+	local idFont, idSize, idFlags = id:GetFont()
+	if idFont then id:SetFont(idFont, math.max(9, idSize - 2), idFlags) end
 	-- Own the footer and its reward buttons; never reparent Blizzard's map frames.
 	local footer = CreateFrame("Frame", nil, parent, "BackdropTemplate")
 	footer:SetFrameLevel(scroll:GetFrameLevel() + 5)
 	footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 4, 6)
 	footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -4, 6)
 	footer:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12, insets = {left = 3, right = 3, top = 3, bottom = 3}})
-	footer:SetBackdropColor(0.16, 0.09, 0.04, 0.95)
+	footer:SetBackdropColor(0.18, 0.075, 0.025, 0.98)
+	-- Separate bronze header band from the dark reward body, like Forever's map quest panel.
+	local headerBand = footer:CreateTexture(nil, "BACKGROUND")
+	headerBand:SetColorTexture(0.24, 0.115, 0.045, 1)
+	headerBand:SetPoint("TOPLEFT", footer, "TOPLEFT", 3, -3)
+	headerBand:SetPoint("TOPRIGHT", footer, "TOPRIGHT", -3, -3)
+	headerBand:SetHeight(27)
+	local headerRule = footer:CreateTexture(nil, "BORDER")
+	headerRule:SetColorTexture(0.43, 0.25, 0.10, 1)
+	headerRule:SetPoint("TOPLEFT", headerBand, "BOTTOMLEFT", 0, 0)
+	headerRule:SetPoint("TOPRIGHT", headerBand, "BOTTOMRIGHT", 0, 0)
+	headerRule:SetHeight(2)
 	local footerHeading = footer:CreateFontString(nil, "ARTWORK", "QuestTitleFont")
-	footerHeading:SetPoint("TOP", 0, -7)
+	footerHeading:SetPoint("TOP", 0, -5)
 	footerHeading:SetText(QUEST_REWARDS or "Rewards")
 	local rewardButtons = {}
 	local rewardLabels = {}
 	local valueCards = {}
 	local function RewardLabel(i)
 		if not rewardLabels[i] then
-			rewardLabels[i] = footer:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+			rewardLabels[i] = footer:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
 			rewardLabels[i]:SetJustifyH("LEFT")
 			rewardLabels[i]:SetWidth(math.max(150, parent:GetWidth() - 34))
 			rewardLabels[i]:SetWordWrap(true)
@@ -56,7 +70,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local function ItemButton(i)
 		if not rewardButtons[i] then
 			local button = CreateFrame("Button", nil, footer, "LargeItemButtonTemplate")
-			button:SetSize(147, 37)
+			button:SetSize(147, 33)
 			button:SetScript("OnEnter", function(self)
 				if not self.reward then return end
 				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -84,9 +98,12 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			local card = CreateFrame("Frame", nil, footer, "BackdropTemplate")
 			card:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 9, insets = {left = 2, right = 2, top = 2, bottom = 2}})
 			card:SetBackdropColor(0.10, 0.06, 0.025, 0.95)
-			card.text = card:CreateFontString(nil, "ARTWORK", "QuestFont")
+			card.text = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+			-- Use the client's narrow UI font instead of the parchment quest font.
+			local fontPath, fontSize, fontFlags = card.text:GetFont()
+			if fontPath then card.text:SetFont("Fonts\\ARIALN.TTF", math.min(fontSize, 13), fontFlags) end
 			card.icon = card:CreateTexture(nil, "ARTWORK")
-			card.icon:SetSize(28, 28)
+			card.icon:SetSize(25, 25)
 			card.icon:SetPoint("LEFT", 3, 0)
 			card.text:SetPoint("LEFT", card.icon, "RIGHT", 5, 0)
 			card.text:SetJustifyH("LEFT")
@@ -129,7 +146,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		for _, card in ipairs(valueCards) do card:Hide() end
 		local hasRewards = #data.choices > 0 or #data.guaranteed > 0 or data.money > 0 or data.xp > 0
 		footer:SetShown(hasRewards)
-		local row, buttonIndex, labelIndex, valueIndex = 29, 0, 0, 0
+		local row, buttonIndex, labelIndex, valueIndex = 33, 0, 0, 0
 		local available = math.max(190, parent:GetWidth() - 34)
 		local cardWidth = math.floor((available - 8) / 2)
 		local function AddLabel(value)
@@ -153,9 +170,11 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				button.Icon:SetTexture(reward.texture)
 				button.Name:SetText(reward.name or "")
 				button.Name:SetTextColor(1, 1, 1)
+			local nameFont, nameSize, nameFlags = button.Name:GetFont()
+			if nameFont and nameSize > 11 then button.Name:SetFont(nameFont, 11, nameFlags) end
 				button.Count:SetText((reward.count or 1) > 1 and reward.count or "")
 				button:Show()
-				if column == 1 or i == #items then row = row + 39 end
+				if column == 1 or i == #items then row = row + 35 end
 			end
 		end
 		if #data.choices > 0 then
@@ -179,7 +198,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				local card = ValueCard(valueIndex)
 				card:ClearAllPoints()
 				card:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + (i - 1) * (cardWidth + 6), -row)
-				card:SetSize(cardWidth, 33)
+				card:SetSize(cardWidth, 30)
 				card.text:SetText(value.text)
 				if value.xp then
 					card.icon:SetTexture("Interface\\Icons\\XP_Icon")
@@ -188,7 +207,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				end
 				card:Show()
 			end
-			if #values > 0 then row = row + 36 end
+			if #values > 0 then row = row + 33 end
 			AddItems(data.guaranteed)
 		end
 		local footerHeight = hasRewards and row + 8 or 0

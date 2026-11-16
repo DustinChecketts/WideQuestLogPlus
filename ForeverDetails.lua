@@ -425,7 +425,10 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		local fixed, footerHeight = UpdateRewardShelf(questID, rewardData, height)
 		id:SetText(ns.QuestIDText(questID))
 		id:SetShown(ns.GetOption("showQuestID"))
-		child:SetHeight(math.max(height + (not fixed and footerHeight > 0 and footerHeight + 28 or 22), scroll:GetHeight()))
+		-- In flowing mode the shelf starts 18px after the text and ends
+		-- exactly at that offset plus its own height. Do not add bottom
+		-- padding: it would expose an empty parchment strip at max scroll.
+		child:SetHeight(math.max(height + (not fixed and footerHeight > 0 and footerHeight + 18 or 22), scroll:GetHeight()))
 		scroll:UpdateScrollChildRect()
 		-- Always start at the title when selecting a quest.\n\t\tscroll:SetVerticalScroll(0)
 	end

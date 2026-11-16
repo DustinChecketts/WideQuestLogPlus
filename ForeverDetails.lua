@@ -65,7 +65,17 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local function UpdateRewardShelf(moneyValue, experienceValue)
 		local entries = {}
 		if experienceValue > 0 then entries[#entries + 1] = {"XP", tostring(experienceValue)} end
-		if moneyValue > 0 then entries[#entries + 1] = {"", GetCoinTextureString(moneyValue)} end
+		if moneyValue > 0 then
+			-- Coin formatting must not prevent the reward footer from appearing.
+			local formatted = tostring(moneyValue) .. " copper"
+			if type(GetCoinTextureString) == "function" then
+				local ok, value = pcall(GetCoinTextureString, moneyValue)
+				if ok and type(value) == "string" and value ~= "" then
+					formatted = value
+				end
+			end
+			entries[#entries + 1] = {"", formatted}
+		end
 		footer:SetShown(#entries > 0)
 		for i, card in ipairs(rewardCards) do
 			local entry = entries[i]
@@ -241,7 +251,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		print(format("WQLP rewards quest=%s allowed=%s choices=%s items=%s copper=%s xp=%s",
 			tostring(info.questID), tostring(info.allowed), tostring(info.choices),
 			tostring(info.rewards), tostring(info.money), tostring(info.xp)))
-		print("WQLP footer:", "visible=" .. tostring(footer:IsShown()), "height=" .. tostring(footer:GetHeight()), "scrollHeight=" .. tostring(scroll:GetHeight()))
+		print("WQLP footer:", "visible=" .. tostring(footer:IsShown()), "height=" .. tostring(footer:GetHeight()), "scrollHeight=" .. tostring(scroll:GetHeight()), "coinHelper=" .. type(GetCoinTextureString))
 	end
 	return Display
 end

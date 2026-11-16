@@ -467,7 +467,7 @@ if CreateColor then
 		local shade = paneVignette:CreateTexture(nil, "OVERLAY")
 		shade:SetTexture("Interface\\Buttons\\WHITE8x8")
 		if not shade.SetGradient then shade:Hide() return end
-		local dark = CreateColor(0.12, 0.075, 0.045, 0.42)
+		local dark = CreateColor(0.12, 0.075, 0.045, 0.60)
 		local clear = CreateColor(0.12, 0.075, 0.045, 0)
 		if edge == "LEFT" or edge == "RIGHT" then
 			shade:SetWidth(thickness)
@@ -480,10 +480,10 @@ if CreateColor then
 		end
 		vignetteEdges[#vignetteEdges + 1] = {edge = edge, texture = shade, dark = dark, clear = clear}
 	end
-	EdgeShade("LEFT", 18)
-	EdgeShade("RIGHT", 18)
-	EdgeShade("TOP", 16)
-	EdgeShade("BOTTOM", 18)
+	EdgeShade("LEFT", 12)
+	EdgeShade("RIGHT", 12)
+	EdgeShade("TOP", 12)
+	EdgeShade("BOTTOM", 12)
 end
 
 local function RefreshVignette()

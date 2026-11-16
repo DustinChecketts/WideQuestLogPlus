@@ -506,6 +506,14 @@ RefreshVignette()
 SLASH_WQLP_VIGNETTE1 = "/wqlpvignette"
 SlashCmdList.WQLP_VIGNETTE = function()
 	vignetteDiagnostic = not vignetteDiagnostic
+	-- Diagnostic only: force the overlay above all quest-detail artwork to
+	-- distinguish strata occlusion from texture/anchor problems.
+	if vignetteDiagnostic then
+		paneVignette:SetFrameStrata("TOOLTIP")
+	else
+		paneVignette:SetFrameStrata(frame:GetFrameStrata())
+		paneVignette:SetFrameLevel(detailScroll:GetFrameLevel() + 7)
+	end
 	RefreshVignette()
 	print("WQLP vignette diagnostic: " .. (vignetteDiagnostic and "ON (red=left, green=right, blue=top, magenta=bottom)" or "OFF (normal shading)"))
 	print(string.format("WQLP vignette: pane %.0fx%.0f, overlay %.0fx%.0f, edges=%d, visible=%s",

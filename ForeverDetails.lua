@@ -168,16 +168,16 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		local available = math.max(190, parent:GetWidth() - 24)
 		local cardWidth = math.floor((available - 8) / 2)
 		local function AddLabel(value)
-			-- Compact, balanced section spacing close to Blizzard's native rewards.
-			-- The first label already has space beneath the Rewards heading.
-			if labelIndex > 0 then row = row + 3 end
+			-- Native labels sit close to the preceding and following reward rows.
+			-- Keep a small symmetric gutter instead of accumulating extra gaps.
+			if labelIndex > 0 then row = row + 2 end
 			labelIndex = labelIndex + 1
 			local label = RewardLabel(labelIndex)
 			label:ClearAllPoints()
 			label:SetPoint("TOPLEFT", footer, "TOPLEFT", 12, -row)
 			label:SetText(value)
 			label:Show()
-			row = row + math.max(16, label:GetStringHeight()) + 3
+			row = row + math.max(14, label:GetStringHeight()) + 2
 		end
 		local function AddItems(items)
 			for i, reward in ipairs(items) do

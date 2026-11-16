@@ -440,6 +440,33 @@ else
 	nativeParchment:Hide()
 end
 
+-- A subtle four-sided vignette on the native parchment. Keep it in the
+-- BACKGROUND layer, behind quest text and the higher-level Rewards shelf.
+-- The tint is transparent toward the center, so parchment grain stays visible.
+-- Do not add opaque fallback strips on clients without texture gradients.
+if CreateColor then
+	local function EdgeShade(horizontal, anchor, opposite, thickness, darkAtStart)
+		local shade = detail:CreateTexture(nil, "BACKGROUND", nil, -1)
+		shade:SetTexture("Interface\\Buttons\\WHITE8x8")
+		if not shade.SetGradient then shade:Hide() return end
+		if horizontal then
+			shade:SetPoint(anchor, detail, anchor)
+			shade:SetPoint(opposite, detail, opposite, darkAtStart and thickness or -thickness, 0)
+		else
+			shade:SetPoint(anchor, detail, anchor)
+			shade:SetPoint(opposite, detail, opposite, 0, darkAtStart and -thickness or thickness)
+		end
+		local dark = CreateColor(0.16, 0.10, 0.06, 0.24)
+		local clear = CreateColor(0.16, 0.10, 0.06, 0)
+		shade:SetGradient(horizontal and "HORIZONTAL" or "VERTICAL",
+			darkAtStart and dark or clear, darkAtStart and clear or dark)
+	end
+	EdgeShade(true, "TOPLEFT", "BOTTOMLEFT", 18, true)
+	EdgeShade(true, "TOPRIGHT", "BOTTOMRIGHT", 18, false)
+	EdgeShade(false, "TOPLEFT", "TOPRIGHT", 16, false)
+	EdgeShade(false, "BOTTOMLEFT", "BOTTOMRIGHT", 18, true)
+end
+
 detail.ContrastBG = detail:CreateTexture(nil, "BACKGROUND", nil, -1)
 detail.ContrastBG:SetAllPoints()
 detail.ContrastBG:Hide()

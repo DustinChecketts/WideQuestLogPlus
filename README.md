@@ -34,8 +34,7 @@ Wide Quest Log Plus keeps Blizzard's original quest log interface on Classic Era
 
 <h4>Acknowledgements</h4>
 
-- [Gogo1951](https://github.com/Gogo1951) for the original Forever compatibility research and prototype that informed this implementation.
-
+- Forever compatibility reserach and prototype by [Gogo1951](https://github.com/Gogo1951).
 - Originally released in 2008 as [DoubleWide](https://www.wowinterface.com/downloads/info6887-DoubleWide.html) by [Kudane](https://www.wowinterface.com/forums/member.php?u=3)
 - Forked in 2019 for 1.13.x Classic by [bloodline_](https://legacy.curseforge.com/members/bloodline_/projects)
 - Re-uploaded in 2021 for 1.14.1 SoM by [CloneVince](https://legacy.curseforge.com/members/CloneVince/projects)

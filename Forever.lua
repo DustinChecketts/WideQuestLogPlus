@@ -452,56 +452,6 @@ detailScroll.ScrollBar:ClearAllPoints()
 detailScroll.ScrollBar:SetPoint("TOPLEFT", detailScroll, "TOPRIGHT", scrollBarX, -4)
 detailScroll.ScrollBar:SetPoint("BOTTOMLEFT", detailScroll, "BOTTOMRIGHT", scrollBarX, 4)
 
--- One non-interactive vignette over the complete right details pane, including
--- the fixed Rewards shelf. Unlike a parchment-only BACKGROUND texture, this
--- sibling frame shades both surfaces continuously. Its narrow edge strips
--- leave the content legible and do not extend into the left quest list.
-local paneVignette = CreateFrame("Frame", nil, frame)
-paneVignette:SetAllPoints(detail)
-paneVignette:SetFrameLevel(detailScroll:GetFrameLevel() + 7)
-paneVignette:EnableMouse(false)
-local vignetteEdges = {}
-if CreateColor then
-	local function EdgeShade(edge, thickness)
-		local shade = paneVignette:CreateTexture(nil, "OVERLAY")
-		shade:SetTexture("Interface\\Buttons\\WHITE8x8")
-		if not shade.SetGradient then shade:Hide() return end
-		local dark = CreateColor(0.063, 0.063, 0.063, 0.60)
-		local clear = CreateColor(0.063, 0.063, 0.063, 0)
-		if edge == "LEFT" or edge == "RIGHT" then
-			shade:SetWidth(thickness)
-			shade:SetPoint("TOP" .. edge, paneVignette, "TOP" .. edge)
-			shade:SetPoint("BOTTOM" .. edge, paneVignette, "BOTTOM" .. edge)
-		else
-			shade:SetHeight(thickness)
-			shade:SetPoint(edge .. "LEFT", paneVignette, edge .. "LEFT")
-			shade:SetPoint(edge .. "RIGHT", paneVignette, edge .. "RIGHT")
-		end
-		vignetteEdges[#vignetteEdges + 1] = {edge = edge, texture = shade, dark = dark, clear = clear}
-	end
-	EdgeShade("LEFT", 9)
-	EdgeShade("RIGHT", 9)
-	EdgeShade("TOP", 9)
-	EdgeShade("BOTTOM", 9)
-end
-
-local function RefreshVignette()
-	for _, entry in ipairs(vignetteEdges) do
-		local edge = entry.edge
-		entry.texture:SetGradient((edge == "LEFT" or edge == "RIGHT") and "HORIZONTAL" or "VERTICAL",
-			(edge == "LEFT" or edge == "BOTTOM") and entry.dark or entry.clear,
-			(edge == "LEFT" or edge == "BOTTOM") and entry.clear or entry.dark)
-	end
-end
-RefreshVignette()
-
-SLASH_WQLP_VIGNETTE1 = "/wqlpvignette"
-SlashCmdList.WQLP_VIGNETTE = function()
-	local enabled = not paneVignette:IsShown()
-	paneVignette:SetShown(enabled)
-	print("WQLP custom vignette: " .. (enabled and "ON" or "OFF") .. " (native parchment shading remains)")
-end
-
 local RenderDetails = ns.CreateForeverDetails(detail, detailScroll, L)
 local function DisplayDetails(resetScroll)
 	detailScroll:SetShown(selectedQuestID ~= nil)

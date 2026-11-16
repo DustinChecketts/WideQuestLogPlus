@@ -51,6 +51,28 @@ jobs:
           git push origin "$TAG"
           git checkout "$TAG"
 
+      - name: Determine CurseForge file name
+        id: release_name
+        shell: bash
+        env:
+          REQUESTED_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            VERSION="$REQUESTED_VERSION"
+          else
+            VERSION="$GITHUB_REF_NAME"
+          fi
+          VERSION="${VERSION#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then
+            echo "Invalid release version: $VERSION"
+            exit 1
+          fi
+          echo "name=WideQuestLogPlus-$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Package and publish
         # Same pinned BigWigs packager as PetXPBarPlus and VendorPricePlus.
         uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0
+        with:
+          # Override both the ZIP filename and the CurseForge upload label.
+          args: '-n "${{ steps.release_name.outputs.name }}:${{ steps.release_name.outputs.name }}"'

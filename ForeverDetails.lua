@@ -163,7 +163,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		local hasRewards = #data.choices > 0 or #data.guaranteed > 0 or data.money > 0 or data.xp > 0
 		footer:SetShown(hasRewards)
 		local row, buttonIndex, labelIndex, valueIndex = 61, 0, 0, 0
-		local rewardRowHeight = 37
+		-- Native reward icons are 32px; keep only a small gap between rows.
+		local rewardRowHeight = 34
 		local available = math.max(190, parent:GetWidth() - 24)
 		local cardWidth = math.floor((available - 8) / 2)
 		local function AddLabel(value)
@@ -257,7 +258,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			if #values > 0 then row = row + rewardRowHeight end
 			AddItems(data.guaranteed)
 		end
-		local footerHeight = hasRewards and row + 8 or 0
+		-- Avoid an extra empty strip below the last reward row.
+		local footerHeight = hasRewards and row + 2 or 0
 		-- Extend the native rewards art through the parchment's lower inset.
 		local lowerInset = hasRewards and 16 or 0
 		footer:SetHeight(footerHeight + lowerInset)

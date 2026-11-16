@@ -193,9 +193,26 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		end
 		local footerHeight = hasRewards and row + 8 or 0
 		footer:SetHeight(footerHeight)
+		local fixed = ns.GetOption("alwaysShowFullRewards")
+		if fixed then
+			if footer:GetParent() ~= parent then footer:SetParent(parent) end
+			footer:SetFrameLevel(scroll:GetFrameLevel() + 5)
+			footer:ClearAllPoints()
+			footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 4, 6)
+			footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -4, 6)
+		else
+			-- Native-style flow: the same reward controls follow the quest text
+			-- inside the scroll child rather than occupying a separate viewport.
+			if footer:GetParent() ~= child then footer:SetParent(child) end
+			footer:SetFrameLevel(child:GetFrameLevel() + 1)
+			footer:ClearAllPoints()
+			footer:SetPoint("TOPLEFT", child, "TOPLEFT", 4, -(height + 18))
+			footer:SetPoint("TOPRIGHT", child, "TOPRIGHT", -4, -(height + 18))
+		end
 		scroll:ClearAllPoints()
 		scroll:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, -2)
-		scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, hasRewards and footerHeight + 10 or 2)
+		scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, fixed and hasRewards and footerHeight + 10 or 2)
+		return fixed, footerHeight
 	end
 	local objectives = {}
 	local placed = {}
@@ -286,10 +303,10 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			questID = questID, allowed = allowed, choices = #rewardData.choices,
 			rewards = #rewardData.guaranteed, money = coins, xp = experience,
 		}
-		UpdateRewardShelf(questID, rewardData)
+		local fixed, footerHeight = UpdateRewardShelf(questID, rewardData)
 		id:SetText(ns.QuestIDText(questID))
 		id:SetShown(ns.GetOption("showQuestID"))
-		child:SetHeight(math.max(height + 22, scroll:GetHeight()))
+		child:SetHeight(math.max(height + (not fixed and footerHeight > 0 and footerHeight + 28 or 22), scroll:GetHeight()))
 		scroll:UpdateScrollChildRect()
 		-- Always start at the title when selecting a quest.\n\t\tscroll:SetVerticalScroll(0)
 	end

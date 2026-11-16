@@ -35,17 +35,19 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local idFont, idSize, idFlags = id:GetFont()
 	if idFont then id:SetFont(idFont, math.max(9, idSize - 2), idFlags) end
 	-- Own the footer and its reward buttons; never reparent Blizzard's map frames.
-	local footer = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+	local footer = CreateFrame("Frame", nil, parent)
 	footer:SetFrameLevel(scroll:GetFrameLevel() + 5)
-	footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 4, 6)
-	footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -4, 6)
-	footer:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12, insets = {left = 3, right = 3, top = 3, bottom = 3}})
-	footer:SetBackdropColor(0.18, 0.075, 0.025, 0.98)
+	footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 0, 0)
+	footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, 0)
+	local rewardBackground = footer:CreateTexture(nil, "BACKGROUND")
+	rewardBackground:SetAllPoints(footer)
+	-- Blizzard quest details reward overlay, without an inset tooltip border.
+	rewardBackground:SetAtlas("QuestDetails-RewardsOverlay")
 	-- Separate bronze header band from the dark reward body, like Forever's map quest panel.
 	local headerBand = footer:CreateTexture(nil, "BACKGROUND")
 	headerBand:SetColorTexture(0.24, 0.115, 0.045, 1)
-	headerBand:SetPoint("TOPLEFT", footer, "TOPLEFT", 3, -3)
-	headerBand:SetPoint("TOPRIGHT", footer, "TOPRIGHT", -3, -3)
+	headerBand:SetPoint("TOPLEFT", footer, "TOPLEFT", 0, 0)
+	headerBand:SetPoint("TOPRIGHT", footer, "TOPRIGHT", 0, 0)
 	headerBand:SetHeight(27)
 	local headerRule = footer:CreateTexture(nil, "BORDER")
 	headerRule:SetColorTexture(0.43, 0.25, 0.10, 1)
@@ -95,17 +97,19 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	end
 	local function ValueCard(i)
 		if not valueCards[i] then
-			local card = CreateFrame("Frame", nil, footer, "BackdropTemplate")
-			card:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 9, insets = {left = 2, right = 2, top = 2, bottom = 2}})
-			card:SetBackdropColor(0.10, 0.06, 0.025, 0.95)
+			local card = CreateFrame("Frame", nil, footer)
+			local textBackground = card:CreateTexture(nil, "BACKGROUND")
+			textBackground:SetColorTexture(0.12, 0.07, 0.035, 0.95)
+			textBackground:SetPoint("TOPLEFT", card, "TOPLEFT", 39, 0)
+			textBackground:SetPoint("BOTTOMRIGHT", card, "BOTTOMRIGHT", 0, 0)
 			card.text = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
 			-- Use the client's narrow UI font instead of the parchment quest font.
 			local fontPath, fontSize, fontFlags = card.text:GetFont()
 			if fontPath then card.text:SetFont("Fonts\\ARIALN.TTF", math.min(fontSize, 13), fontFlags) end
 			card.icon = card:CreateTexture(nil, "ARTWORK")
-			card.icon:SetSize(25, 25)
-			card.icon:SetPoint("LEFT", 3, 0)
-			card.text:SetPoint("LEFT", card.icon, "RIGHT", 5, 0)
+			card.icon:SetSize(34, 34)
+			card.icon:SetPoint("LEFT", 0, 0)
+			card.text:SetPoint("LEFT", card.icon, "RIGHT", 8, 0)
 			card.text:SetJustifyH("LEFT")
 			valueCards[i] = card
 		end
@@ -146,8 +150,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		for _, card in ipairs(valueCards) do card:Hide() end
 		local hasRewards = #data.choices > 0 or #data.guaranteed > 0 or data.money > 0 or data.xp > 0
 		footer:SetShown(hasRewards)
-		local row, buttonIndex, labelIndex, valueIndex = 33, 0, 0, 0
-		local available = math.max(190, parent:GetWidth() - 34)
+		local row, buttonIndex, labelIndex, valueIndex = 35, 0, 0, 0
+		local available = math.max(190, parent:GetWidth() - 24)
 		local cardWidth = math.floor((available - 8) / 2)
 		local function AddLabel(value)
 			labelIndex = labelIndex + 1
@@ -156,7 +160,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			label:SetPoint("TOPLEFT", footer, "TOPLEFT", 12, -row)
 			label:SetText(value)
 			label:Show()
-			row = row + math.max(15, label:GetStringHeight() + 3)
+			row = row + math.max(19, label:GetStringHeight() + 6)
 		end
 		local function AddItems(items)
 			for i, reward in ipairs(items) do
@@ -167,6 +171,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				local column = (i - 1) % 2
 				button:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + column * (cardWidth + 6), -row)
 				button:SetWidth(cardWidth)
+			button:SetHeight(32)
+			button.Icon:SetSize(32, 32)
 				button.Icon:SetTexture(reward.texture)
 				button.Name:SetText(reward.name or "")
 				button.Name:SetTextColor(1, 1, 1)
@@ -174,7 +180,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			if nameFont and nameSize > 11 then button.Name:SetFont(nameFont, 11, nameFlags) end
 				button.Count:SetText((reward.count or 1) > 1 and reward.count or "")
 				button:Show()
-				if column == 1 or i == #items then row = row + 35 end
+				if column == 1 or i == #items then row = row + 38 end
 			end
 		end
 		if #data.choices > 0 then
@@ -198,7 +204,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				local card = ValueCard(valueIndex)
 				card:ClearAllPoints()
 				card:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + (i - 1) * (cardWidth + 6), -row)
-				card:SetSize(cardWidth, 30)
+				card:SetSize(cardWidth, 35)
 				card.text:SetText(value.text)
 				if value.xp then
 					card.icon:SetTexture("Interface\\Icons\\XP_Icon")
@@ -207,7 +213,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				end
 				card:Show()
 			end
-			if #values > 0 then row = row + 33 end
+			if #values > 0 then row = row + 41 end
 			AddItems(data.guaranteed)
 		end
 		local footerHeight = hasRewards and row + 8 or 0
@@ -217,16 +223,16 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			if footer:GetParent() ~= parent then footer:SetParent(parent) end
 			footer:SetFrameLevel(scroll:GetFrameLevel() + 5)
 			footer:ClearAllPoints()
-			footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 4, 6)
-			footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -4, 6)
+			footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 0, 0)
+			footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, 0)
 		else
 			-- Native-style flow: the same reward controls follow the quest text
 			-- inside the scroll child rather than occupying a separate viewport.
 			if footer:GetParent() ~= child then footer:SetParent(child) end
 			footer:SetFrameLevel(child:GetFrameLevel() + 1)
 			footer:ClearAllPoints()
-			footer:SetPoint("TOPLEFT", child, "TOPLEFT", 4, -((contentHeight or 0) + 18))
-			footer:SetPoint("TOPRIGHT", child, "TOPRIGHT", -4, -((contentHeight or 0) + 18))
+			footer:SetPoint("TOPLEFT", child, "TOPLEFT", 0, -((contentHeight or 0) + 18))
+			footer:SetPoint("TOPRIGHT", child, "TOPRIGHT", 0, -((contentHeight or 0) + 18))
 		end
 		scroll:ClearAllPoints()
 		scroll:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, -2)

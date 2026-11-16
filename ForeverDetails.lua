@@ -29,14 +29,14 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local id = parent:CreateFontString(nil, "OVERLAY", "QuestFontNormalSmall")
 	id:SetJustifyH("RIGHT")
 	id:SetWidth(80)
-	id:SetPoint("TOPRIGHT", parent, "TOPLEFT", x + width, -yStart)
+	id:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -18, -6)
 	id:SetDrawLayer("OVERLAY", 7)
 	-- Own the footer and its reward buttons; never reparent Blizzard's map frames.
 	local footer = CreateFrame("Frame", nil, parent, "BackdropTemplate")
 	footer:SetFrameLevel(scroll:GetFrameLevel() + 5)
 	footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 4, 6)
 	footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -4, 6)
-	footer:SetBackdrop({bgFile = "Interface\DialogFrame\UI-DialogBox-Background", edgeFile = "Interface\Tooltips\UI-Tooltip-Border", edgeSize = 12, insets = {left = 3, right = 3, top = 3, bottom = 3}})
+	footer:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12, insets = {left = 3, right = 3, top = 3, bottom = 3}})
 	footer:SetBackdropColor(0.16, 0.09, 0.04, 0.95)
 	local footerHeading = footer:CreateFontString(nil, "ARTWORK", "QuestTitleFont")
 	footerHeading:SetPoint("TOP", 0, -7)
@@ -80,7 +80,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local function ValueCard(i)
 		if not valueCards[i] then
 			local card = CreateFrame("Frame", nil, footer, "BackdropTemplate")
-			card:SetBackdrop({bgFile = "Interface\DialogFrame\UI-DialogBox-Background", edgeFile = "Interface\Tooltips\UI-Tooltip-Border", edgeSize = 9, insets = {left = 2, right = 2, top = 2, bottom = 2}})
+			card:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 9, insets = {left = 2, right = 2, top = 2, bottom = 2}})
 			card:SetBackdropColor(0.10, 0.06, 0.025, 0.95)
 			card.text = card:CreateFontString(nil, "ARTWORK", "QuestFont")
 			card.text:SetPoint("LEFT", 8, 0)
@@ -125,7 +125,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		local hasRewards = #data.choices > 0 or #data.guaranteed > 0 or data.money > 0 or data.xp > 0
 		footer:SetShown(hasRewards)
 		local row, buttonIndex, labelIndex, valueIndex = 32, 0, 0, 0
-		local available = math.max(190, parent:GetWidth() - 26)
+		local available = math.max(190, parent:GetWidth() - 34)
 		local cardWidth = math.floor((available - 8) / 2)
 		local function AddLabel(value)
 			labelIndex = labelIndex + 1
@@ -148,8 +148,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				button.Icon:SetTexture(reward.texture)
 				button.Name:SetText(reward.name or "")
 				local quality = reward.quality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[reward.quality]
-				if quality and reward.quality > 1 then button.Name:SetTextColor(quality.r, quality.g, quality.b)
-				else button.Name:SetTextColor(HIGHLIGHT_FONT_COLOR:GetRGB()) end
+				if quality and reward.quality > 1 then button.Name:SetTextColor(1, 1, 1)
+				else button.Name:SetTextColor(1, 1, 1) end
 				button.Count:SetText((reward.count or 1) > 1 and reward.count or "")
 				button:Show()
 				if column == 1 or i == #items then row = row + 41 end
@@ -283,7 +283,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		id:SetShown(ns.GetOption("showQuestID"))
 		child:SetHeight(math.max(height + 22, scroll:GetHeight()))
 		scroll:UpdateScrollChildRect()
-		if reset then scroll:SetVerticalScroll(0) end
+		-- Always start at the title when selecting a quest.\n\t\tscroll:SetVerticalScroll(0)
 	end
 	SLASH_WQLP_REWARDS1 = "/wqlprewards"
 	SlashCmdList.WQLP_REWARDS = function()

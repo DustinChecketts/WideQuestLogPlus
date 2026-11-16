@@ -445,26 +445,30 @@ end
 -- The tint is transparent toward the center, so parchment grain stays visible.
 -- Do not add opaque fallback strips on clients without texture gradients.
 if CreateColor then
-	local function EdgeShade(horizontal, anchor, opposite, thickness, darkAtStart)
+	local function EdgeShade(edge, thickness)
 		local shade = detail:CreateTexture(nil, "BACKGROUND", nil, -1)
 		shade:SetTexture("Interface\\Buttons\\WHITE8x8")
 		if not shade.SetGradient then shade:Hide() return end
-		if horizontal then
-			shade:SetPoint(anchor, detail, anchor)
-			shade:SetPoint(opposite, detail, opposite, darkAtStart and thickness or -thickness, 0)
-		else
-			shade:SetPoint(anchor, detail, anchor)
-			shade:SetPoint(opposite, detail, opposite, 0, darkAtStart and -thickness or thickness)
-		end
 		local dark = CreateColor(0.16, 0.10, 0.06, 0.24)
 		local clear = CreateColor(0.16, 0.10, 0.06, 0)
-		shade:SetGradient(horizontal and "HORIZONTAL" or "VERTICAL",
-			darkAtStart and dark or clear, darkAtStart and clear or dark)
+		if edge == "LEFT" or edge == "RIGHT" then
+			shade:SetWidth(thickness)
+			shade:SetPoint("TOP" .. edge, detail, "TOP" .. edge)
+			shade:SetPoint("BOTTOM" .. edge, detail, "BOTTOM" .. edge)
+			shade:SetGradient("HORIZONTAL", edge == "LEFT" and dark or clear,
+				edge == "LEFT" and clear or dark)
+		else
+			shade:SetHeight(thickness)
+			shade:SetPoint(edge .. "LEFT", detail, edge .. "LEFT")
+			shade:SetPoint(edge .. "RIGHT", detail, edge .. "RIGHT")
+			shade:SetGradient("VERTICAL", edge == "BOTTOM" and dark or clear,
+				edge == "BOTTOM" and clear or dark)
+		end
 	end
-	EdgeShade(true, "TOPLEFT", "BOTTOMLEFT", 18, true)
-	EdgeShade(true, "TOPRIGHT", "BOTTOMRIGHT", 18, false)
-	EdgeShade(false, "TOPLEFT", "TOPRIGHT", 16, false)
-	EdgeShade(false, "BOTTOMLEFT", "BOTTOMRIGHT", 18, true)
+	EdgeShade("LEFT", 18)
+	EdgeShade("RIGHT", 18)
+	EdgeShade("TOP", 16)
+	EdgeShade("BOTTOM", 18)
 end
 
 detail.ContrastBG = detail:CreateTexture(nil, "BACKGROUND", nil, -1)

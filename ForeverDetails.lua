@@ -121,6 +121,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			card.icon:SetSize(32, 32)
 			card.icon:SetPoint("LEFT", 0, 0)
 			card.text:SetPoint("LEFT", card, "LEFT", 36, 0)
+			card.background = textBackground
 			card.text:SetJustifyH("LEFT")
 			valueCards[i] = card
 		end
@@ -218,12 +219,19 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			local values = {}
 			if data.xp > 0 then values[#values + 1] = {text = BreakUpLargeNumbers(data.xp), xp = true} end
 			if data.money > 0 then
-				local formatted = tostring(data.money) .. " copper"
-				if type(GetCoinTextureString) == "function" then
-					local ok, value = pcall(GetCoinTextureString, data.money)
-					if ok and type(value) == "string" and value ~= "" then formatted = value end
+				-- Quest reward money is expressed in copper. Match the native coin
+				-- presentation rather than displaying that raw amount as text.
+				local gold = math.floor(data.money / 10000)
+				local silver = math.floor(data.money / 100) % 100
+				local copper = data.money % 100
+				local parts = {}
+				local function AddCoin(amount, denomination)
+					parts[#parts + 1] = amount .. " |TInterface\\\\MoneyFrame\\\\UI-" .. denomination .. "Icon:14:14:0:0|t"
 				end
-				values[#values + 1] = {text = formatted, money = true}
+				if gold > 0 then AddCoin(gold, "Gold") end
+				if silver > 0 then AddCoin(silver, "Silver") end
+				if copper > 0 then AddCoin(copper, "Copper") end
+				values[#values + 1] = {text = table.concat(parts, " "), money = true}
 			end
 			for i, value in ipairs(values) do
 				valueIndex = valueIndex + 1
@@ -231,6 +239,9 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				card:ClearAllPoints()
 				card:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + (i - 1) * (cardWidth + 6), -row)
 				card:SetSize(cardWidth, 34)
+				-- The XP name-frame art sits one pixel left of the item name frames.
+				card.background:ClearAllPoints()
+				card.background:SetPoint("LEFT", card, "LEFT", value.xp and 22 or 21, 0)
 				card.text:SetWidth(cardWidth - 58)
 				card.text:SetText(value.text)
 				card.text:SetTextColor(1, 1, 1)

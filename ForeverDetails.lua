@@ -43,26 +43,24 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	rewardBackground:SetAllPoints(footer)
 	-- Blizzard quest details reward overlay, without an inset tooltip border.
 	rewardBackground:SetAtlas("QuestDetails-RewardsOverlay")
-	-- Separate bronze header band from the dark reward body, like Forever's map quest panel.
-	local headerBand = footer:CreateTexture(nil, "BACKGROUND")
-	headerBand:SetColorTexture(0.24, 0.115, 0.045, 1)
-	headerBand:SetPoint("TOPLEFT", footer, "TOPLEFT", 0, 0)
-	headerBand:SetPoint("TOPRIGHT", footer, "TOPRIGHT", 0, 0)
-	headerBand:SetHeight(27)
-	local headerRule = footer:CreateTexture(nil, "BORDER")
-	headerRule:SetColorTexture(0.43, 0.25, 0.10, 1)
-	headerRule:SetPoint("TOPLEFT", headerBand, "BOTTOMLEFT", 0, 0)
-	headerRule:SetPoint("TOPRIGHT", headerBand, "BOTTOMRIGHT", 0, 0)
-	headerRule:SetHeight(2)
-	local footerHeading = footer:CreateFontString(nil, "ARTWORK", "QuestTitleFont")
-	footerHeading:SetPoint("TOP", 0, -5)
+	local bottomShadow = footer:CreateTexture(nil, "BORDER", nil, 1)
+	bottomShadow:SetAtlas("QuestDetails-RewardsBottomOverlay")
+	bottomShadow:SetPoint("BOTTOMLEFT", footer, "BOTTOMLEFT", 0, 0)
+	bottomShadow:SetPoint("BOTTOMRIGHT", footer, "BOTTOMRIGHT", 0, 0)
+	bottomShadow:SetHeight(46)
+	-- The native rewards overlay contains its own ornamental header and divider.
+	-- Blizzard's QuestMapFrame.xml uses QuestFont_Huge at -16 and this tan color.
+	local footerHeading = footer:CreateFontString(nil, "ARTWORK", "QuestFont_Huge")
+	footerHeading:SetPoint("TOP", footer, "TOP", 0, -16)
 	footerHeading:SetText(QUEST_REWARDS or "Rewards")
+	footerHeading:SetTextColor(0.902, 0.788, 0.671)
 	local rewardButtons = {}
 	local rewardLabels = {}
 	local valueCards = {}
 	local function RewardLabel(i)
 		if not rewardLabels[i] then
 			rewardLabels[i] = footer:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+			rewardLabels[i]:SetTextColor(0.902, 0.788, 0.671)
 			rewardLabels[i]:SetJustifyH("LEFT")
 			rewardLabels[i]:SetWidth(math.max(150, parent:GetWidth() - 34))
 			rewardLabels[i]:SetWordWrap(true)
@@ -103,6 +101,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			textBackground:SetPoint("TOPLEFT", card, "TOPLEFT", 39, 0)
 			textBackground:SetPoint("BOTTOMRIGHT", card, "BOTTOMRIGHT", 0, 0)
 			card.text = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+			card.text:SetTextColor(0.902, 0.788, 0.671)
 			-- Use the client's narrow UI font instead of the parchment quest font.
 			local fontPath, fontSize, fontFlags = card.text:GetFont()
 			if fontPath then card.text:SetFont("Fonts\\ARIALN.TTF", math.min(fontSize, 13), fontFlags) end
@@ -150,7 +149,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		for _, card in ipairs(valueCards) do card:Hide() end
 		local hasRewards = #data.choices > 0 or #data.guaranteed > 0 or data.money > 0 or data.xp > 0
 		footer:SetShown(hasRewards)
-		local row, buttonIndex, labelIndex, valueIndex = 35, 0, 0, 0
+		local row, buttonIndex, labelIndex, valueIndex = 53, 0, 0, 0
 		local available = math.max(190, parent:GetWidth() - 24)
 		local cardWidth = math.floor((available - 8) / 2)
 		local function AddLabel(value)
@@ -171,11 +170,18 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				local column = (i - 1) % 2
 				button:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + column * (cardWidth + 6), -row)
 				button:SetWidth(cardWidth)
-			button:SetHeight(32)
+			button:SetHeight(33)
 			button.Icon:SetSize(32, 32)
 				button.Icon:SetTexture(reward.texture)
 				button.Name:SetText(reward.name or "")
-				button.Name:SetTextColor(1, 1, 1)
+				button.Name:SetTextColor(0.902, 0.788, 0.671)
+			-- The item template exposes an icon-quality border on supported clients.
+			if button.IconBorder then
+				local quality = reward.quality
+				local color = quality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[quality]
+				button.IconBorder:SetShown(color ~= nil and quality > 1)
+				if color then button.IconBorder:SetVertexColor(color.r, color.g, color.b) end
+			end
 			local nameFont, nameSize, nameFlags = button.Name:GetFont()
 			if nameFont and nameSize > 11 then button.Name:SetFont(nameFont, 11, nameFlags) end
 				button.Count:SetText((reward.count or 1) > 1 and reward.count or "")

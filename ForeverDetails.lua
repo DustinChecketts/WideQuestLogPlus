@@ -282,7 +282,13 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		-- the viewport overlaps the quest-log action buttons at some UI scales.
 		local lowerInset = 0
 		footer:SetHeight(footerHeight)
-		local fixed = ns.GetOption("alwaysShowFullRewards")
+		-- Even with pinning disabled, short quests should keep the Rewards shelf
+		-- at the bottom rather than leaving unused parchment beneath it.
+		-- Only use flowing rewards when the full text + shelf exceeds the pane.
+		local availableHeight = math.max(parent:GetHeight() - 2, 0)
+		local fitsWithoutScrolling = hasRewards
+			and (contentHeight or 0) + 18 + footerHeight <= availableHeight
+		local fixed = ns.GetOption("alwaysShowFullRewards") or fitsWithoutScrolling
 		if fixed then
 			if footer:GetParent() ~= parent then footer:SetParent(parent) end
 			footer:SetFrameLevel(scroll:GetFrameLevel() + 5)

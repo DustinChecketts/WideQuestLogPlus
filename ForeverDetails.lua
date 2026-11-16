@@ -39,19 +39,24 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	footer:SetFrameLevel(scroll:GetFrameLevel() + 5)
 	footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 0, 0)
 	footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, 0)
+	-- Mirror QuestMapFrame.xml's three native atlas layers. Keep the header and
+	-- bottom at their atlas dimensions; only the middle texture stretches.
+	local rewardTop = footer:CreateTexture(nil, "BORDER", nil, 1)
+	rewardTop:SetAtlas("questlog-reward-header-top", true)
+	rewardTop:SetPoint("TOPLEFT", footer, "TOPLEFT")
+	rewardTop:SetPoint("TOPRIGHT", footer, "TOPRIGHT")
+	local rewardBottom = footer:CreateTexture(nil, "BORDER", nil, 1)
+	rewardBottom:SetAtlas("questlog-reward-bottom", true)
+	rewardBottom:SetPoint("BOTTOMLEFT", footer, "BOTTOMLEFT")
+	rewardBottom:SetPoint("BOTTOMRIGHT", footer, "BOTTOMRIGHT")
 	local rewardBackground = footer:CreateTexture(nil, "BACKGROUND")
-	rewardBackground:SetAllPoints(footer)
-	-- Blizzard quest details reward overlay, without an inset tooltip border.
-	rewardBackground:SetAtlas("QuestDetails-RewardsOverlay")
-	local bottomShadow = footer:CreateTexture(nil, "BORDER", nil, 1)
-	bottomShadow:SetAtlas("QuestDetails-RewardsBottomOverlay")
-	bottomShadow:SetPoint("BOTTOMLEFT", footer, "BOTTOMLEFT", 0, 0)
-	bottomShadow:SetPoint("BOTTOMRIGHT", footer, "BOTTOMRIGHT", 0, 0)
-	bottomShadow:SetHeight(46)
-	-- The native rewards overlay contains its own ornamental header and divider.
-	-- Blizzard's QuestMapFrame.xml uses QuestFont_Huge at -16 and this tan color.
+	rewardBackground:SetAtlas("questlog-reward-tile-vertical")
+	rewardBackground:SetPoint("TOPLEFT", rewardTop, "BOTTOMLEFT")
+	rewardBackground:SetPoint("RIGHT", footer, "RIGHT")
+	rewardBackground:SetPoint("BOTTOM", footer, "BOTTOM")
+	-- Native QuestMapFrame.xml uses QuestFont_Huge at -22 with tan text.
 	local footerHeading = footer:CreateFontString(nil, "ARTWORK", "QuestFont_Huge")
-	footerHeading:SetPoint("TOP", footer, "TOP", 0, -16)
+	footerHeading:SetPoint("TOP", footer, "TOP", 0, -22)
 	footerHeading:SetText(QUEST_REWARDS or "Rewards")
 	footerHeading:SetTextColor(0.902, 0.788, 0.671)
 	local rewardButtons = {}
@@ -69,8 +74,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	end
 	local function ItemButton(i)
 		if not rewardButtons[i] then
-			local button = CreateFrame("Button", nil, footer, "LargeItemButtonTemplate")
-			button:SetSize(147, 33)
+			local button = CreateFrame("Button", nil, footer, "LargeQuestRewardItemButtonTemplate")
+			button:SetSize(147, 41)
 			button:SetScript("OnEnter", function(self)
 				if not self.reward then return end
 				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -97,7 +102,8 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		if not valueCards[i] then
 			local card = CreateFrame("Frame", nil, footer)
 			local textBackground = card:CreateTexture(nil, "BACKGROUND")
-			textBackground:SetColorTexture(0.12, 0.07, 0.035, 0.95)
+			-- Reuse the native quest item name background, not a flat color block.
+			textBackground:SetTexture("Interface\\QuestFrame\\UI-QuestItemNameFrame")
 			textBackground:SetPoint("TOPLEFT", card, "TOPLEFT", 39, 0)
 			textBackground:SetPoint("BOTTOMRIGHT", card, "BOTTOMRIGHT", 0, 0)
 			card.text = card:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
@@ -149,7 +155,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		for _, card in ipairs(valueCards) do card:Hide() end
 		local hasRewards = #data.choices > 0 or #data.guaranteed > 0 or data.money > 0 or data.xp > 0
 		footer:SetShown(hasRewards)
-		local row, buttonIndex, labelIndex, valueIndex = 53, 0, 0, 0
+		local row, buttonIndex, labelIndex, valueIndex = 61, 0, 0, 0
 		local available = math.max(190, parent:GetWidth() - 24)
 		local cardWidth = math.floor((available - 8) / 2)
 		local function AddLabel(value)
@@ -170,22 +176,30 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				local column = (i - 1) % 2
 				button:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + column * (cardWidth + 6), -row)
 				button:SetWidth(cardWidth)
-			button:SetHeight(32)
+			button:SetHeight(41)
+			-- Match the icon-sized name background without distorting the native icon.
 			if button.NameFrame then button.NameFrame:SetHeight(32) end
 			button.Icon:SetSize(32, 32)
 				button.Icon:SetTexture(reward.texture)
 				button.Name:SetText(reward.name or "")
 				button.Name:SetTextColor(1, 1, 1)
-			-- The item template exposes an icon-quality border on supported clients.
-			-- Blizzard's IconBorder is a circular quality ring, not the square
-			-- item-quality edge used by the quest reward presentation.
-			-- Do not show that ring as a substitute for a border.
-			if button.IconBorder then button.IconBorder:Hide() end
+			-- LargeQuestRewardItemButtonTemplate supplies the square WhiteIconFrame.
+			-- Tint it with Blizzard's item quality colors; never use the generic ring.
+			if button.IconBorder then
+				local quality = reward.quality
+				local color = quality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[quality]
+				if color then
+					button.IconBorder:SetVertexColor(color.r, color.g, color.b)
+					button.IconBorder:Show()
+				else
+					button.IconBorder:Hide()
+				end
+			end
 			local nameFont, nameSize, nameFlags = button.Name:GetFont()
 			if nameFont and nameSize > 11 then button.Name:SetFont(nameFont, 11, nameFlags) end
 				button.Count:SetText((reward.count or 1) > 1 and reward.count or "")
 				button:Show()
-				if column == 1 or i == #items then row = row + 38 end
+				if column == 1 or i == #items then row = row + 41 end
 			end
 		end
 		if #data.choices > 0 then

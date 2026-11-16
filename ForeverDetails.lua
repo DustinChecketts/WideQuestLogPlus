@@ -26,71 +26,170 @@ function ns.CreateForeverDetails(parent, scroll, L)
 	local summary = Text("QuestFont")
 	local descriptionHeader = Text("QuestTitleFont", QUEST_DESCRIPTION)
 	local description = Text("QuestFont")
-	local receive = Text("QuestFont", REWARD_ITEMS_ONLY or "You will receive:")
-	local choiceLabel = Text("QuestFont", REWARD_CHOICES or "Choose your reward:")
 	local id = parent:CreateFontString(nil, "OVERLAY", "QuestFontNormalSmall")
 	id:SetJustifyH("RIGHT")
 	id:SetWidth(80)
 	id:SetPoint("TOPRIGHT", parent, "TOPLEFT", x + width, -yStart)
 	id:SetDrawLayer("OVERLAY", 7)
-	-- Fixed reward shelf: independent of the scrolling text and its anchor chain.
-	-- This is intentionally plain until native Forever atlas names are verified.
+	-- Own the footer and its reward buttons; never reparent Blizzard's map frames.
 	local footer = CreateFrame("Frame", nil, parent, "BackdropTemplate")
 	footer:SetFrameLevel(scroll:GetFrameLevel() + 5)
 	footer:SetPoint("BOTTOMLEFT", parent, "BOTTOMLEFT", 4, 6)
 	footer:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -4, 6)
-	footer:SetHeight(91)
-	footer:EnableMouse(false)
-	footer:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12, insets = {left = 3, right = 3, top = 3, bottom = 3}})
+	footer:SetBackdrop({bgFile = "Interface\DialogFrame\UI-DialogBox-Background", edgeFile = "Interface\Tooltips\UI-Tooltip-Border", edgeSize = 12, insets = {left = 3, right = 3, top = 3, bottom = 3}})
 	footer:SetBackdropColor(0.16, 0.09, 0.04, 0.95)
 	local footerHeading = footer:CreateFontString(nil, "ARTWORK", "QuestTitleFont")
 	footerHeading:SetPoint("TOP", 0, -7)
 	footerHeading:SetText(QUEST_REWARDS or "Rewards")
-	local rewardCards = {}
-	for i = 1, 2 do
-		local card = CreateFrame("Frame", nil, footer, "BackdropTemplate")
-		card:SetSize(170, 34)
-		card:EnableMouse(false)
-		card:SetBackdrop({bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background", edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 9, insets = {left = 2, right = 2, top = 2, bottom = 2}})
-		card:SetBackdropColor(0.10, 0.06, 0.025, 0.95)
-		card:SetPoint("TOPLEFT", footer, "TOPLEFT", 9 + (i - 1) * 184, -45)
-		local icon = card:CreateTexture(nil, "ARTWORK")
-		icon:SetSize(28, 28)
-		icon:SetPoint("LEFT", 4, 0)
-		local value = card:CreateFontString(nil, "ARTWORK", "QuestFont")
-		value:SetPoint("LEFT", icon, "RIGHT", 5, 0)
-		value:SetJustifyH("LEFT")
-		rewardCards[i] = {frame = card, icon = icon, value = value}
+	local rewardButtons = {}
+	local rewardLabels = {}
+	local valueCards = {}
+	local function RewardLabel(i)
+		if not rewardLabels[i] then
+			rewardLabels[i] = footer:CreateFontString(nil, "ARTWORK", "QuestFont")
+			rewardLabels[i]:SetJustifyH("LEFT")
+		end
+		return rewardLabels[i]
 	end
-	local function UpdateRewardShelf(moneyValue, experienceValue)
-		local entries = {}
-		if experienceValue > 0 then entries[#entries + 1] = {"XP", tostring(experienceValue)} end
-		if moneyValue > 0 then
-			-- Coin formatting must not prevent the reward footer from appearing.
-			local formatted = tostring(moneyValue) .. " copper"
-			if type(GetCoinTextureString) == "function" then
-				local ok, value = pcall(GetCoinTextureString, moneyValue)
-				if ok and type(value) == "string" and value ~= "" then
-					formatted = value
+	local function ItemButton(i)
+		if not rewardButtons[i] then
+			local button = CreateFrame("Button", nil, footer, "LargeItemButtonTemplate")
+			button:SetSize(147, 37)
+			button:SetScript("OnEnter", function(self)
+				if not self.reward then return end
+				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+				C_QuestLog.SetSelectedQuest(self.questID)
+				if self.reward.kind == "currency" then
+					GameTooltip:SetQuestLogCurrency(self.reward.type, self.reward.index)
+				else
+					GameTooltip:SetQuestLogItem(self.reward.type, self.reward.index)
 				end
-			end
-			entries[#entries + 1] = {"", formatted}
+				GameTooltip:Show()
+			end)
+			button:SetScript("OnLeave", GameTooltip_Hide)
+			button:SetScript("OnClick", function(self)
+				if not self.reward or self.reward.kind ~= "item" or not IsModifiedClick("CHATLINK") then return end
+				C_QuestLog.SetSelectedQuest(self.questID)
+				local link = GetQuestLogItemLink(self.reward.type, self.reward.index)
+				if link and ChatEdit_InsertLink then ChatEdit_InsertLink(link) end
+			end)
+			rewardButtons[i] = button
 		end
-		footer:SetShown(#entries > 0)
-		for i, card in ipairs(rewardCards) do
-			local entry = entries[i]
-			card.frame:SetShown(entry ~= nil)
-			if entry then
-				card.icon:SetTexture(nil)
-				card.value:SetText((entry[1] ~= "" and (entry[1] .. "  ") or "") .. entry[2])
+		return rewardButtons[i]
+	end
+	local function ValueCard(i)
+		if not valueCards[i] then
+			local card = CreateFrame("Frame", nil, footer, "BackdropTemplate")
+			card:SetBackdrop({bgFile = "Interface\DialogFrame\UI-DialogBox-Background", edgeFile = "Interface\Tooltips\UI-Tooltip-Border", edgeSize = 9, insets = {left = 2, right = 2, top = 2, bottom = 2}})
+			card:SetBackdropColor(0.10, 0.06, 0.025, 0.95)
+			card.text = card:CreateFontString(nil, "ARTWORK", "QuestFont")
+			card.text:SetPoint("LEFT", 8, 0)
+			card.text:SetJustifyH("LEFT")
+			valueCards[i] = card
+		end
+		return valueCards[i]
+	end
+	local function GetRewardData(questID, allowed, money, xp)
+		local data = {choices = {}, guaranteed = {}, money = money, xp = xp}
+		if not allowed then return data end
+		local itemIndex, currencyIndex = 0, 0
+		for i = 1, GetNumQuestLogChoices(questID, true) or 0 do
+			local isCurrency = type(GetQuestLogChoiceInfoLootType) == "function" and GetQuestLogChoiceInfoLootType(i) == 1
+			local reward
+			if isCurrency and C_QuestLog.GetQuestRewardCurrencyInfo then
+				currencyIndex = currencyIndex + 1
+				local info = C_QuestLog.GetQuestRewardCurrencyInfo(questID, i, true)
+				if info then reward = {kind = "currency", type = "choice", index = currencyIndex, name = info.name, texture = info.texture, count = info.totalRewardAmount} end
+			else
+				itemIndex = itemIndex + 1
+				local name, texture, count, quality = GetQuestLogChoiceInfo(i)
+				reward = {kind = "item", type = "choice", index = itemIndex, name = name, texture = texture, count = count, quality = quality}
+			end
+			if reward then data.choices[#data.choices + 1] = reward end
+		end
+		for i = 1, GetNumQuestLogRewards() or 0 do
+			local name, texture, count, quality = GetQuestLogRewardInfo(i)
+			data.guaranteed[#data.guaranteed + 1] = {kind = "item", type = "reward", index = i, name = name, texture = texture, count = count, quality = quality}
+		end
+		if C_QuestInfoSystem and C_QuestInfoSystem.GetQuestRewardCurrencies then
+			for i, info in ipairs(C_QuestInfoSystem.GetQuestRewardCurrencies(questID) or {}) do
+				data.guaranteed[#data.guaranteed + 1] = {kind = "currency", type = "reward", index = i, name = info.name, texture = info.texture, count = info.totalRewardAmount}
 			end
 		end
+		return data
+	end
+	local function UpdateRewardShelf(questID, data)
+		for _, button in ipairs(rewardButtons) do button:Hide() button.reward = nil end
+		for _, label in ipairs(rewardLabels) do label:Hide() end
+		for _, card in ipairs(valueCards) do card:Hide() end
+		local hasRewards = #data.choices > 0 or #data.guaranteed > 0 or data.money > 0 or data.xp > 0
+		footer:SetShown(hasRewards)
+		local row, buttonIndex, labelIndex, valueIndex = 32, 0, 0, 0
+		local available = math.max(190, parent:GetWidth() - 26)
+		local cardWidth = math.floor((available - 8) / 2)
+		local function AddLabel(value)
+			labelIndex = labelIndex + 1
+			local label = RewardLabel(labelIndex)
+			label:ClearAllPoints()
+			label:SetPoint("TOPLEFT", footer, "TOPLEFT", 12, -row)
+			label:SetText(value)
+			label:Show()
+			row = row + 19
+		end
+		local function AddItems(items)
+			for i, reward in ipairs(items) do
+				buttonIndex = buttonIndex + 1
+				local button = ItemButton(buttonIndex)
+				button.reward, button.questID = reward, questID
+				button:ClearAllPoints()
+				local column = (i - 1) % 2
+				button:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + column * (cardWidth + 6), -row)
+				button:SetWidth(cardWidth)
+				button.Icon:SetTexture(reward.texture)
+				button.Name:SetText(reward.name or "")
+				local quality = reward.quality and ITEM_QUALITY_COLORS and ITEM_QUALITY_COLORS[reward.quality]
+				if quality and reward.quality > 1 then button.Name:SetTextColor(quality.r, quality.g, quality.b)
+				else button.Name:SetTextColor(HIGHLIGHT_FONT_COLOR:GetRGB()) end
+				button.Count:SetText((reward.count or 1) > 1 and reward.count or "")
+				button:Show()
+				if column == 1 or i == #items then row = row + 41 end
+			end
+		end
+		if #data.choices > 0 then
+			AddLabel(#data.choices == 1 and (REWARD_ITEMS_ONLY or "You will receive:") or (REWARD_CHOICES or "Choose your reward:"))
+			AddItems(data.choices)
+		end
+		if #data.guaranteed > 0 or data.money > 0 or data.xp > 0 then
+			AddLabel(#data.choices > 0 and (REWARD_ITEMS or "You will also receive:") or (REWARD_ITEMS_ONLY or "You will receive:"))
+			local values = {}
+			if data.xp > 0 then values[#values + 1] = "XP  " .. BreakUpLargeNumbers(data.xp) end
+			if data.money > 0 then
+				local formatted = tostring(data.money) .. " copper"
+				if type(GetCoinTextureString) == "function" then
+					local ok, value = pcall(GetCoinTextureString, data.money)
+					if ok and type(value) == "string" and value ~= "" then formatted = value end
+				end
+				values[#values + 1] = formatted
+			end
+			for i, value in ipairs(values) do
+				valueIndex = valueIndex + 1
+				local card = ValueCard(valueIndex)
+				card:ClearAllPoints()
+				card:SetPoint("TOPLEFT", footer, "TOPLEFT", 12 + (i - 1) * (cardWidth + 6), -row)
+				card:SetSize(cardWidth, 33)
+				card.text:SetText(value)
+				card:Show()
+			end
+			if #values > 0 then row = row + 39 end
+			AddItems(data.guaranteed)
+		end
+		local footerHeight = hasRewards and row + 8 or 0
+		footer:SetHeight(footerHeight)
 		scroll:ClearAllPoints()
 		scroll:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, -2)
-		scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, #entries > 0 and 102 or 2)
+		scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, hasRewards and footerHeight + 10 or 2)
 	end
 	local objectives = {}
-	local buttons = {}
 	local placed = {}
 	local last, height
 	local function Place(region, gap)
@@ -108,7 +207,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		placed[#placed + 1] = region
 	end
 	local function Clear()
-		UpdateRewardShelf(0, 0)
+		UpdateRewardShelf(nil, {choices = {}, guaranteed = {}, money = 0, xp = 0})
 		for _, region in ipairs(placed) do region:Hide() end
 		for _, region in ipairs(regions) do region:Hide() end
 		id:Hide()
@@ -116,7 +215,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			obj.line:Hide()
 			obj.count:Hide()
 		end
-		for _, button in ipairs(buttons) do button:Hide() end
+		
 		wipe(placed)
 		last, height = nil, 0
 	end
@@ -139,51 +238,6 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		Place(obj.line, i == 1 and 10 or 2)
 	end
 
-	local function RewardButton(i, kind, index, name, texture, count)
-		local button = buttons[i]
-		if not button then
-			button = CreateFrame("Button", nil, child, "LargeItemButtonTemplate")
-			button:SetSize(147, 37)
-			button:EnableMouse(true)
-			button:SetScript("OnEnter", function(self)
-				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-				if self.kind == "choice" then GameTooltip:SetQuestLogItem("choice", self.index)
-				else GameTooltip:SetQuestLogItem("reward", self.index) end
-				GameTooltip:Show()
-			end)
-			button:SetScript("OnLeave", GameTooltip_Hide)
-			button:SetScript("OnClick", function(self)
-				if IsModifiedClick("CHATLINK") and ChatEdit_InsertLink then
-					local link = GetQuestLogItemLink(self.kind == "choice" and "choice" or "reward", self.index)
-					if link then ChatEdit_InsertLink(link) end
-				end
-			end)
-			buttons[i] = button
-		end
-		button.kind, button.index = kind, index
-		if button.Name then button.Name:SetText(name or "") end
-		if button.Icon then button.Icon:SetTexture(texture) end
-		if button.Count then button.Count:SetText((count or 1) > 1 and count or "") end
-		return button
-	end
-	local function AddRewardButtons(kind, count, offset)
-		local lastRow
-		for i = 1, count do
-			local name, texture, quantity
-			if kind == "choice" then name, texture, quantity = GetQuestLogChoiceInfo(i)
-			else name, texture, quantity = GetQuestLogRewardInfo(i) end
-			local button = RewardButton(offset + i, kind, i, name, texture, quantity)
-			if i % 2 == 1 then
-				Place(button, i == 1 and 8 or 4)
-				lastRow = button
-			else
-				button:ClearAllPoints()
-				button:SetPoint("TOPLEFT", lastRow, "TOPRIGHT", 1, 0)
-				button:Show()
-				placed[#placed + 1] = button
-			end
-		end
-	end
 	local function Display(questID, reset)
 		Clear()
 		if not questID then id:Hide() return end
@@ -217,27 +271,14 @@ function ns.CreateForeverDetails(parent, scroll, L)
 			Place(description, 5)
 		end
 		local allowed = not C_QuestLog.ShouldShowQuestRewards or C_QuestLog.ShouldShowQuestRewards(questID)
-		-- Reward values must be queried for the currently selected quest on every
-		-- render. Do not gate XP/money behind ShouldShowQuestRewards: that flag
-		-- can suppress item reward disclosure independently of visible native XP.
 		local coins = GetQuestLogRewardMoney() or 0
 		local experience = GetQuestLogRewardXP() or 0
-		local choices = allowed and (GetNumQuestLogChoices(questID, true) or 0) or 0
-		local rewards = allowed and (GetNumQuestLogRewards() or 0) or 0
-		rewardSnapshot = { questID = questID, allowed = allowed, choices = choices, rewards = rewards, money = coins, xp = experience }
-		UpdateRewardShelf(coins, experience)
-		if allowed then
-			if choices > 0 or rewards > 0 then
-				if choices > 0 then
-					Place(choiceLabel, 5)
-					AddRewardButtons("choice", choices, 1)
-				end
-				if rewards > 0 or coins > 0 then
-					Place(receive, 8)
-				end
-				if rewards > 0 then AddRewardButtons("reward", rewards, choices + 1) end
-			end
-		end
+		local rewardData = GetRewardData(questID, allowed, coins, experience)
+		rewardSnapshot = {
+			questID = questID, allowed = allowed, choices = #rewardData.choices,
+			rewards = #rewardData.guaranteed, money = coins, xp = experience,
+		}
+		UpdateRewardShelf(questID, rewardData)
 		id:SetText(ns.QuestIDText(questID))
 		id:SetShown(ns.GetOption("showQuestID"))
 		child:SetHeight(math.max(height + 22, scroll:GetHeight()))

@@ -226,7 +226,7 @@ function ns.CreateForeverDetails(parent, scroll, L)
 				local copper = data.money % 100
 				local parts = {}
 				local function AddCoin(amount, denomination)
-					parts[#parts + 1] = amount .. " |TInterface\\\\MoneyFrame\\\\UI-" .. denomination .. "Icon:14:14:0:0|t"
+					parts[#parts + 1] = amount .. " |TInterface\\MoneyFrame\\UI-" .. denomination .. "Icon:14:14:0:0|t"
 				end
 				if gold > 0 then AddCoin(gold, "Gold") end
 				if silver > 0 then AddCoin(silver, "Silver") end

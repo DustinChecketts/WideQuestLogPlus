@@ -285,7 +285,13 @@ function ns.CreateForeverDetails(parent, scroll, L)
 		end
 		scroll:ClearAllPoints()
 		scroll:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, -2)
-		scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0, fixed and hasRewards and footerHeight + 10 or 2)
+		-- The native reward-header atlas already includes the parchment-to-rewards
+		-- shadow. Let the scrolling text extend slightly behind that header so
+		-- the atlas hides the clip edge, rather than ending the viewport above it.
+		-- Footer is a higher-level sibling and stays fully interactive.
+		local headerOverlap = fixed and hasRewards and 12 or 0
+		scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 0,
+			fixed and hasRewards and (footerHeight - headerOverlap) or 2)
 		return fixed, footerHeight
 	end
 	local objectives = {}

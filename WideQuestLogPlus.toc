@@ -16,3 +16,4 @@ Options.lua
 Classic.lua
 ForeverDetails.lua
 Forever.lua
+ForeverArtDiagnostics.lua

@@ -15,4 +15,5 @@ Options.lua
 
 Classic.lua
 ForeverDetails.lua
+DungeonHeaders.lua
 Forever.lua

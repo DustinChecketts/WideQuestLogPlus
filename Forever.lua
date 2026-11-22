@@ -226,7 +226,7 @@ end
 
 local function ColorRow(row, highlighted)
 	local data = row.data
-	if (not data) or data.isSpacer then
+	if (not data) or data.isSpacer or data.isDungeonDivider then
 		return
 	end
 	local color, highlight
@@ -343,7 +343,23 @@ local function InitRow(row, data)
 	row.Text:SetWidth(0)
 	row.Tag:SetText(nil)
 	row.Check:Hide()
-	row:EnableMouse(not data.isSpacer)
+	row:EnableMouse(not data.isSpacer and not data.isDungeonDivider)
+	if data.isDungeonDivider then
+		row.Icon:Hide()
+		row.Text:SetText(nil)
+		row.Selected:Hide()
+		if not row.Divider then
+			row.Divider = row:CreateTexture(nil, "ARTWORK")
+			row.Divider:SetTexture("Interface\\Buttons\\WHITE8X8")
+			row.Divider:SetVertexColor(0.47, 0.34, 0.19, 0.7)
+			row.Divider:SetHeight(1)
+			row.Divider:SetPoint("LEFT", 12, 0)
+			row.Divider:SetPoint("RIGHT", -12, 0)
+		end
+		row.Divider:Show()
+		return
+	end
+	if row.Divider then row.Divider:Hide() end
 
 	if (data.isSpacer) then
 		row.Icon:Hide()
@@ -385,7 +401,7 @@ end
 
 local listView = CreateScrollBoxListLinearView()
 listView:SetElementExtentCalculator(function(_, data)
-	return data.isSpacer and L.HEADER_GAP or ROW_HEIGHT
+	return data.isDungeonDivider and 12 or (data.isSpacer and L.HEADER_GAP or ROW_HEIGHT)
 end)
 listView:SetElementInitializer("Button", InitRow)
 ScrollUtil.InitScrollBoxListWithScrollBar(listBox, listBar, listView)
@@ -594,14 +610,21 @@ local function BuildEntries()
 		end
 	end
 
-	-- Preserve Blizzard's quest-log order. WideQuestLogPlus is a presentation addon by default;
-	-- alternate sorting belongs in an opt-in preference, not the canonical Forever recreation.
-	local anyHeader, anyExpanded = false, false
+	-- Stable partition of Blizzard's original zone order.
+	local groupDungeons = ns.GetOption("groupDungeonQuests")
+	local worldZones, dungeonZones = {}, {}
 	for _, zone in ipairs(zones) do
-		if (#zone.quests > 0) then
+		if #zone.quests > 0 then
+			local destination = groupDungeons and ns.IsDungeonQuestHeader(zone.title) and dungeonZones or worldZones
+			destination[#destination + 1] = zone
+		end
+	end
+	local anyHeader, anyExpanded = false, false
+	local function AppendZones(group)
+		for _, zone in ipairs(group) do
 			entries[#entries + 1] = zone
 			anyHeader = true
-			if (not zone.isCollapsed) then
+			if not zone.isCollapsed then
 				anyExpanded = true
 				for _, quest in ipairs(zone.quests) do
 					entries[#entries + 1] = quest
@@ -609,6 +632,11 @@ local function BuildEntries()
 			end
 		end
 	end
+	AppendZones(worldZones)
+	if groupDungeons and #worldZones > 0 and #dungeonZones > 0 then
+		entries[#entries + 1] = {isDungeonDivider = true}
+	end
+	AppendZones(dungeonZones)
 
 	return entries, quests, anyHeader and not anyExpanded
 end

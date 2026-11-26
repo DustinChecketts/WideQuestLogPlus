@@ -2,7 +2,7 @@ local ADDON_NAME, ns = ...
 
 -- Shared, account-wide presentation preferences. The settings page is registered after
 -- SavedVariables load; the active client renderer supplies its own refresh callback.
-local defaults = { showQuestLevel = true, showQuestID = true, alwaysShowFullRewards = true }
+local defaults = { showQuestLevel = true, showQuestID = true, alwaysShowFullRewards = true, groupDungeonQuests = false }
 
 function ns.GetOption(key)
 	local value = ns.GetDB()[key]
@@ -51,7 +51,8 @@ local levelCheck = AddCheckbox("Show Quest Level", "showQuestLevel", description
 local idCheck = AddCheckbox("Show Quest ID", "showQuestID", levelCheck, -10)
 -- Only the Forever renderer provides a separately configurable Rewards shelf.
 if ns.Compat and ns.Compat.isForever then
-	AddCheckbox("Pin Rewards to Bottom", "alwaysShowFullRewards", idCheck, -10)
+	local rewardCheck = AddCheckbox("Pin Rewards to Bottom", "alwaysShowFullRewards", idCheck, -10)
+	AddCheckbox("Group Dungeon Quests", "groupDungeonQuests", rewardCheck, -10)
 end
 
 local loader = CreateFrame("Frame")

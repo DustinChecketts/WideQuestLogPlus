@@ -92,74 +92,46 @@ end)
 -- Tracking, and Questie
 ---------------------------------------------------------------------------------------------------
 
--- Questie's tracker keeps its own list of tracked quests and only learns about new ones through
--- C_QuestLog.AddQuestWatch(). The client's automatic watch on accepting a quest bypasses that, so a
--- quest can be watched by Blizzard yet missing from Questie's tracker. And Questie's tracker only shows
--- quests in its database, which much of WoW Forever's new content isn't yet. So while Questie's
--- tracker is in charge, a quest counts as tracked only if Questie's tracker shows it
-local questieTracker, questiePlayer
+-- Questie owns tracking policy when its tracker is enabled. Its Forever tracker
+-- hooks native AddQuestWatch/RemoveQuestWatch and supports native-only quests.
+-- Do not infer tracking eligibility from its internal quest database.
+local questieTracker
 
-local function ImportQuestieModule(name)
-	if (not QuestieLoader) then
-		return
-	end
-	local ok, module = pcall(QuestieLoader.ImportModule, QuestieLoader, name)
-	return ok and type(module) == "table" and module or nil
-end
-
--- Returns Questie's tracker if it's in charge of this quest, false if it's in charge but can't show
--- the quest, or nil if Blizzard's tracker is in charge
-local function TrackerFor(questID)
-	if (not (Questie and Questie.db and Questie.db.profile and Questie.db.profile.trackerEnabled)) then
+local function TrackerFor()
+	if not (Questie and Questie.db and Questie.db.profile and Questie.db.profile.trackerEnabled) then
 		return nil
 	end
-	questieTracker = questieTracker or ImportQuestieModule("QuestieTracker")
-	questiePlayer = questiePlayer or ImportQuestieModule("QuestiePlayer")
-	if (not (questieTracker and questieTracker.IsTrackedByQuestie and questiePlayer)) then
-		return nil
+	if not questieTracker and QuestieLoader then
+		local ok, module = pcall(QuestieLoader.ImportModule, QuestieLoader, "QuestieTracker")
+		if ok and type(module) == "table" then
+			questieTracker = module
+		end
 	end
-	local log = questiePlayer.currentQuestlog
-	return (log and log[questID] ~= nil) and questieTracker or false
-end
-
-local function CanTrack(questID)
-	return TrackerFor(questID) ~= false
+	if questieTracker and type(questieTracker.IsTrackedByQuestie) == "function" then
+		return questieTracker
+	end
 end
 
 local function IsTracked(questID)
-	local tracker = TrackerFor(questID)
-	if (tracker) then
+	local tracker = TrackerFor()
+	if tracker then
 		return tracker.IsTrackedByQuestie(questID) and true or false
-	elseif (tracker == false) then
-		return false
 	end
 	return QuestUtils_IsQuestWatched(questID)
 end
 
-local warnedUntrackable = {}
 local function ToggleTracking(questID)
-	local tracker = TrackerFor(questID)
-	if (tracker == false) then
-		if (not warnedUntrackable[questID]) then
-			warnedUntrackable[questID] = true
-			ns.Print(format("Questie's tracker can't show %s because the quest is missing from Questie's database.",
-				GetQuestLink(questID) or C_QuestLog.GetTitleForQuestID(questID) or questID))
-		end
-		UIErrorsFrame:AddMessage("Questie can't track this quest yet", 1.0, 0.1, 0.1, 1.0)
-		return
-	end
-
+	local tracker = TrackerFor()
 	local watched = QuestUtils_IsQuestWatched(questID)
-	if (IsTracked(questID)) then
-		if (tracker and not watched) then
+	if IsTracked(questID) then
+		if tracker and not watched and type(tracker.UntrackQuestId) == "function" then
 			tracker:UntrackQuestId(questID)
-		elseif (QuestUtil.CanRemoveQuestWatch()) then
-			C_QuestLog.RemoveQuestWatch(questID) -- Also untracks it in Questie
+		elseif QuestUtil.CanRemoveQuestWatch() then
+			C_QuestLog.RemoveQuestWatch(questID)
 		end
-	elseif (not watched and C_QuestLog.GetNumQuestWatches() >= Constants.QuestWatchConsts.MAX_QUEST_WATCHES) then
+	elseif not watched and C_QuestLog.GetNumQuestWatches() >= Constants.QuestWatchConsts.MAX_QUEST_WATCHES then
 		UIErrorsFrame:AddMessage(OBJECTIVES_WATCH_TOO_MANY, 1.0, 0.1, 0.1, 1.0)
 	else
-		-- Adding a watch that already exists is harmless, and is what tells Questie to track it
 		C_QuestLog.AddQuestWatch(questID)
 	end
 	RequestUpdate()
@@ -255,7 +227,7 @@ local function OpenQuestMenu(row)
 	MenuUtil.CreateContextMenu(row, function(_, root)
 		root:CreateButton(IsTracked(questID) and UNTRACK_QUEST or TRACK_QUEST, function()
 			ToggleTracking(questID)
-		end):SetEnabled(CanTrack(questID))
+		end)
 		root:CreateButton(SHARE_QUEST, function()
 			QuestMapQuestOptions_ShareQuest(questID)
 		end):SetEnabled(C_QuestLog.IsPushableQuest(questID) and IsInGroup())
@@ -499,17 +471,6 @@ local trackButton = CreateBottomButton(TRACK_QUEST_ABBREV, nil, ForSelectedQuest
 trackButton:SetPoint("RIGHT", shareButton, "LEFT")
 
 -- Say why the button is greyed out for quests Questie can't track
-trackButton:SetMotionScriptsWhileDisabled(true)
-trackButton:SetScript("OnEnter", function(self)
-	if (self.untrackable) then
-		GameTooltip:SetOwner(self, "ANCHOR_TOP")
-		GameTooltip:AddLine("Can't track with Questie", 1, 1, 1)
-		GameTooltip:AddLine("This quest is missing from Questie's database, so Questie's tracker can't show it.", nil, nil, nil, true)
-		GameTooltip:Show()
-	end
-end)
-trackButton:SetScript("OnLeave", GameTooltip_Hide)
-
 local function UpdateButtons()
 	local questID = selectedQuestID
 	if (not questID) then
@@ -523,10 +484,9 @@ local function UpdateButtons()
 	abandonButton:SetEnabled(not disabled and C_QuestLog.CanAbandonQuest(questID))
 	shareButton:SetEnabled(not disabled and C_QuestLog.IsPushableQuest(questID) and IsInGroup())
 
-	local tracked, trackable = IsTracked(questID), CanTrack(questID)
+	local tracked = IsTracked(questID)
 	trackButton:SetText(tracked and UNTRACK_QUEST_ABBREV or TRACK_QUEST_ABBREV)
-	trackButton:SetEnabled(trackable and ((tracked and QuestUtil.CanRemoveQuestWatch()) or (not tracked and not disabled)))
-	trackButton.untrackable = not trackable
+	trackButton:SetEnabled((tracked and QuestUtil.CanRemoveQuestWatch()) or (not tracked and not disabled))
 end
 
 ---------------------------------------------------------------------------------------------------
